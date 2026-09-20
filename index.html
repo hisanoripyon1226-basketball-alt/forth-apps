@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>深海アクアリウム潜水艦 〜 地図記号＆単位の大冒険 〜</title>
+  <title>深海アクアリウム潜水艦 〜 小学校 地図記号＆単位の深海大探検 〜</title>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
   
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,7 +24,7 @@
       --accent-gold: #ffd700;
       --accent-green: #00ff88;
       --danger-red: #ff3366;
-      --panel-bg: rgba(6, 20, 38, 0.78);
+      --panel-bg: rgba(6, 20, 38, 0.82);
       --panel-border: rgba(0, 240, 255, 0.35);
       --font-main: 'Zen Maru Gothic', sans-serif;
       --font-hud: 'Orbitron', monospace;
@@ -48,6 +48,13 @@
       color: #fff;
     }
 
+    ruby rt {
+      font-size: 0.65em;
+      color: #a5e7ff;
+      font-weight: normal;
+      user-select: none;
+    }
+
     #webgl-canvas {
       position: absolute;
       top: 0;
@@ -66,7 +73,7 @@
       height: 100%;
       pointer-events: none;
       z-index: 2;
-      background: radial-gradient(circle at center, transparent 60%, rgba(2, 10, 25, 0.6) 100%);
+      background: radial-gradient(circle at center, transparent 60%, rgba(2, 10, 25, 0.65) 100%);
       box-shadow: inset 0 0 100px rgba(0, 240, 255, 0.15);
     }
 
@@ -81,11 +88,33 @@
       z-index: 3;
       opacity: 0;
       transition: opacity 0.4s ease;
-      box-shadow: inset 0 0 120px rgba(0, 255, 136, 0.45);
-      border: 4px solid rgba(0, 255, 136, 0.3);
+      box-shadow: inset 0 0 130px rgba(0, 255, 136, 0.5);
+      border: 4px solid rgba(0, 255, 136, 0.4);
     }
     #stealth-vignette.active {
       opacity: 1;
+    }
+
+    /* 潜水スプラッシュエフェクト */
+    #dive-splash-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      background: radial-gradient(circle, rgba(160, 240, 255, 0.85) 0%, rgba(0, 150, 255, 0.4) 60%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.6s ease-out;
+    }
+    #dive-splash-overlay.splash {
+      opacity: 1;
+      animation: splashFade 0.9s forwards ease-out;
+    }
+    @keyframes splashFade {
+      0% { opacity: 0.9; transform: scale(1.05); }
+      100% { opacity: 0; transform: scale(1); }
     }
 
     /* 被弾・危険時の警告フラッシュ */
@@ -105,6 +134,58 @@
       opacity: 1;
     }
 
+    /* 3D追従HUDマーカーレイヤー */
+    #hud-markers-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 8;
+      overflow: hidden;
+    }
+
+    .orb-hud-marker {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: opacity 0.15s ease-out;
+      pointer-events: none;
+    }
+    .orb-hud-marker .bracket-box {
+      width: 44px;
+      height: 44px;
+      border: 2px solid rgba(0, 240, 255, 0.8);
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 30, 60, 0.4);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+      animation: markerPulse 2s infinite ease-in-out;
+    }
+    .orb-hud-marker.correct .bracket-box {
+      border-color: #ffd700;
+      box-shadow: 0 0 14px #ffd700;
+    }
+    .orb-hud-marker .marker-dist {
+      font-family: var(--font-hud);
+      font-size: 11px;
+      color: #00f0ff;
+      margin-top: 3px;
+      background: rgba(4, 15, 30, 0.85);
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+    @keyframes markerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
     /* HUD メインレイヤー */
     #hud-layer {
       position: absolute;
@@ -117,7 +198,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 16px;
+      padding: 14px 18px;
       font-family: var(--font-hud);
     }
 
@@ -134,10 +215,10 @@
       background: var(--panel-bg);
       backdrop-filter: blur(10px);
       border: 1px solid var(--panel-border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 12px 18px;
       min-width: 220px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
 
     .status-bar-row {
@@ -153,7 +234,8 @@
       font-size: 11px;
       color: #9cd5ff;
       margin-bottom: 3px;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
+      font-family: var(--font-main);
     }
 
     .progress-bar-bg {
@@ -202,11 +284,11 @@
     .mission-center-panel {
       flex: 1;
       max-width: 580px;
-      background: linear-gradient(180deg, rgba(6, 25, 52, 0.92) 0%, rgba(4, 15, 32, 0.85) 100%);
+      background: linear-gradient(180deg, rgba(6, 25, 52, 0.92) 0%, rgba(4, 15, 32, 0.88) 100%);
       backdrop-filter: blur(12px);
       border: 2px solid var(--primary-cyan);
       border-radius: 16px;
-      padding: 10px 20px;
+      padding: 10px 18px;
       text-align: center;
       box-shadow: 0 0 25px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.1);
       position: relative;
@@ -250,39 +332,63 @@
 
     .mission-prompt-title {
       font-family: var(--font-main);
-      font-size: 13px;
+      font-size: 12px;
       color: #b0e0ff;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
 
     .mission-prompt-text {
       font-family: var(--font-main);
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 900;
       color: #ffffff;
       text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
       letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .mission-tts-btn {
+      background: rgba(0, 240, 255, 0.2);
+      border: 1px solid var(--primary-cyan);
+      color: #fff;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      transition: all 0.2s;
+    }
+    .mission-tts-btn:hover {
+      background: var(--primary-cyan);
+      color: #000;
     }
 
     .mission-hint-sub {
       font-family: var(--font-main);
-      font-size: 12px;
+      font-size: 11px;
       color: var(--accent-gold);
       margin-top: 3px;
     }
 
-    /* 右上: ソナーレーダー & クイックボタン */
+    /* 右上: ソナーレーダー & アクション */
     .radar-actions-panel {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 10px;
+      gap: 8px;
     }
 
     .sonar-radar-box {
-      width: 130px;
-      height: 130px;
-      background: rgba(4, 18, 36, 0.85);
+      width: 120px;
+      height: 120px;
+      background: rgba(4, 18, 36, 0.88);
       border: 2px solid rgba(0, 240, 255, 0.6);
       border-radius: 50%;
       position: relative;
@@ -314,7 +420,7 @@
 
     .top-action-buttons {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       pointer-events: auto;
     }
 
@@ -323,30 +429,45 @@
       border: 1px solid var(--panel-border);
       color: var(--primary-cyan);
       border-radius: 8px;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       transition: all 0.2s;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
     .hud-btn:hover {
-      background: rgba(0, 240, 255, 0.2);
+      background: rgba(0, 240, 255, 0.25);
       border-color: var(--primary-cyan);
       box-shadow: 0 0 10px var(--primary-cyan);
       transform: scale(1.05);
     }
 
-    /* 中央通知アラート (ENEMY ALERT / STEALTH) */
+    /* 中央通知アラート (ENEMY ALERT / STEALTH / COMPASS) */
     .hud-center-alerts {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       pointer-events: none;
+    }
+
+    .target-nav-arrow {
+      background: rgba(6, 25, 52, 0.8);
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: var(--font-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+      transition: opacity 0.3s;
     }
 
     .stealth-indicator {
@@ -358,7 +479,7 @@
       color: var(--accent-green);
       padding: 6px 16px;
       border-radius: 30px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       font-family: var(--font-main);
       box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
@@ -375,10 +496,11 @@
       background: rgba(255, 51, 102, 0.25);
       border: 2px solid var(--danger-red);
       color: #fff;
-      padding: 8px 24px;
+      padding: 6px 20px;
       border-radius: 8px;
-      font-size: 15px;
+      font-size: 13px;
       font-weight: bold;
+      font-family: var(--font-main);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -412,11 +534,11 @@
       backdrop-filter: blur(8px);
       border: 1px solid var(--panel-border);
       border-radius: 10px;
-      padding: 8px 14px;
+      padding: 8px 12px;
       font-size: 11px;
       color: #9cd5ff;
       display: flex;
-      gap: 12px;
+      gap: 10px;
       font-family: var(--font-main);
     }
     .key-badge {
@@ -433,7 +555,7 @@
 
     .action-hud-center {
       display: flex;
-      gap: 15px;
+      gap: 12px;
     }
 
     .big-hud-btn {
@@ -441,9 +563,9 @@
       border: 2px solid var(--primary-cyan);
       color: #fff;
       border-radius: 14px;
-      padding: 10px 22px;
-      font-family: var(--font-hud);
-      font-size: 14px;
+      padding: 9px 18px;
+      font-family: var(--font-main);
+      font-size: 13px;
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -457,11 +579,8 @@
       box-shadow: 0 0 25px var(--primary-cyan);
       transform: translateY(-2px);
     }
-    .big-hud-btn:active {
-      transform: translateY(1px);
-    }
     .big-hud-btn.capture-ready {
-      background: linear-gradient(180deg, rgba(255, 215, 0, 0.4), rgba(180, 130, 0, 0.8));
+      background: linear-gradient(180deg, rgba(255, 215, 0, 0.45), rgba(180, 130, 0, 0.85));
       border-color: var(--accent-gold);
       box-shadow: 0 0 25px var(--accent-gold);
       animation: pulseGold 1s infinite alternate;
@@ -469,7 +588,7 @@
 
     @keyframes pulseGold {
       from { transform: scale(1); }
-      to { transform: scale(1.06); }
+      to { transform: scale(1.05); }
     }
 
     /* モバイル操作パネル */
@@ -486,39 +605,39 @@
     }
 
     .joystick-zone {
-      width: 130px;
-      height: 130px;
+      width: 120px;
+      height: 120px;
       background: rgba(0, 240, 255, 0.08);
-      border: 2px dashed rgba(0, 240, 255, 0.3);
+      border: 2px dashed rgba(0, 240, 255, 0.35);
       border-radius: 50%;
       position: relative;
       pointer-events: auto;
     }
     .joystick-knob {
-      width: 50px;
-      height: 50px;
+      width: 46px;
+      height: 46px;
       background: radial-gradient(circle, var(--primary-cyan), #0077aa);
       border-radius: 50%;
       position: absolute;
-      top: 40px;
-      left: 40px;
+      top: 37px;
+      left: 37px;
       box-shadow: 0 0 15px var(--primary-cyan);
     }
 
     .vert-buttons-zone {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       pointer-events: auto;
     }
     .vert-btn {
-      width: 54px;
-      height: 54px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       background: rgba(4, 25, 50, 0.85);
       border: 2px solid var(--primary-cyan);
       color: #fff;
-      font-size: 20px;
+      font-size: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -536,7 +655,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(3, 10, 22, 0.85);
+      background: rgba(3, 10, 22, 0.88);
       backdrop-filter: blur(14px);
       z-index: 100;
       display: flex;
@@ -556,43 +675,43 @@
       background: linear-gradient(180deg, #09203f 0%, #061325 100%);
       border: 2px solid var(--primary-cyan);
       border-radius: 20px;
-      padding: 28px;
-      max-width: 620px;
+      padding: 26px;
+      max-width: 650px;
       width: 100%;
       box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
       text-align: center;
       position: relative;
-      max-height: 90vh;
+      max-height: 92vh;
       overflow-y: auto;
     }
 
     .modal-title {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 900;
       color: #fff;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       text-shadow: 0 0 12px var(--primary-cyan);
     }
 
     .modal-subtitle {
-      font-size: 14px;
+      font-size: 13px;
       color: #a0d4ff;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     /* 難易度選択カード */
     .mode-select-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-bottom: 25px;
+      gap: 12px;
+      margin-bottom: 22px;
     }
 
     .mode-card {
       background: rgba(255, 255, 255, 0.05);
       border: 2px solid rgba(0, 240, 255, 0.2);
       border-radius: 14px;
-      padding: 16px 10px;
+      padding: 14px 10px;
       cursor: pointer;
       transition: all 0.25s ease;
       text-align: center;
@@ -601,7 +720,7 @@
       background: rgba(0, 240, 255, 0.15);
       border-color: var(--primary-cyan);
       box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-      transform: translateY(-4px);
+      transform: translateY(-3px);
     }
     .mode-card.easy.selected {
       border-color: var(--accent-green);
@@ -617,11 +736,11 @@
     }
 
     .mode-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
+      font-size: 26px;
+      margin-bottom: 6px;
     }
     .mode-name {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       margin-bottom: 4px;
     }
@@ -631,22 +750,22 @@
       line-height: 1.4;
     }
 
-    /* 開始ボタン等 */
+    /* ボタン共通 */
     .primary-btn {
       background: linear-gradient(90deg, #00c6ff, #0072ff);
       border: none;
       color: #fff;
       font-family: var(--font-main);
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
-      padding: 14px 38px;
+      padding: 12px 34px;
       border-radius: 30px;
       cursor: pointer;
       box-shadow: 0 0 20px rgba(0, 198, 255, 0.5);
       transition: all 0.2s;
     }
     .primary-btn:hover {
-      transform: scale(1.05);
+      transform: scale(1.04);
       box-shadow: 0 0 30px rgba(0, 198, 255, 0.8);
     }
 
@@ -655,66 +774,145 @@
       border: 1px solid rgba(255, 255, 255, 0.3);
       color: #fff;
       font-family: var(--font-main);
-      font-size: 14px;
-      padding: 10px 22px;
+      font-size: 13px;
+      padding: 9px 20px;
       border-radius: 20px;
       cursor: pointer;
       transition: all 0.2s;
-      margin-left: 10px;
+      margin-left: 8px;
     }
     .secondary-btn:hover {
       background: rgba(255, 255, 255, 0.2);
     }
 
-    /* 正解解説モーダル */
-    .result-badge {
-      display: inline-block;
-      padding: 4px 18px;
+    /* 潜航指令書 (MISSION BRIEFING) 専用カード */
+    .briefing-card {
+      border: 2px solid var(--accent-gold);
+      box-shadow: 0 0 45px rgba(255, 215, 0, 0.35);
+    }
+    .briefing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 215, 0, 0.2);
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      padding: 4px 16px;
       border-radius: 20px;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: bold;
       margin-bottom: 12px;
     }
-    .badge-correct {
-      background: rgba(0, 255, 136, 0.25);
-      border: 1px solid var(--accent-green);
-      color: var(--accent-green);
-    }
-    .badge-wrong {
-      background: rgba(255, 51, 102, 0.25);
-      border: 1px solid var(--danger-red);
-      color: var(--danger-red);
-    }
 
-    .explanation-icon-display {
-      width: 100px;
-      height: 100px;
-      margin: 10px auto 16px;
-      background: rgba(255, 255, 255, 0.08);
+    .briefing-orb-preview {
+      width: 140px;
+      height: 140px;
+      margin: 10px auto 14px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.25), rgba(4, 15, 30, 0.8));
       border: 2px solid var(--primary-cyan);
-      border-radius: 16px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+      position: relative;
     }
-    .explanation-icon-display canvas {
-      width: 80px;
-      height: 80px;
+    .briefing-orb-preview canvas {
+      width: 110px;
+      height: 110px;
     }
 
-    .explanation-box {
-      background: rgba(0, 0, 0, 0.35);
+    .briefing-explanation-card {
+      background: rgba(0, 0, 0, 0.4);
       border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 22px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
       text-align: left;
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.7;
       color: #e3f2fd;
-      border-left: 4px solid var(--primary-cyan);
+      border-left: 4px solid var(--accent-gold);
     }
-    .explanation-box strong {
+    .briefing-explanation-card strong {
       color: var(--accent-gold);
+    }
+    .briefing-caution {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.15);
+      color: #ffd080;
+      font-size: 12px;
+    }
+
+    /* 正解・不正解 比較モーダル */
+    .compare-boxes-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 15px 0 20px;
+    }
+    .compare-box {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .compare-box.wrong-one {
+      border-color: var(--danger-red);
+      background: rgba(255, 51, 102, 0.1);
+    }
+    .compare-box.correct-one {
+      border-color: var(--accent-green);
+      background: rgba(0, 255, 136, 0.1);
+    }
+    .compare-box canvas {
+      width: 80px;
+      height: 80px;
+      margin: 6px 0;
+    }
+    .compare-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    /* 学習まとめノート (リザルト内) */
+    .study-notes-list {
+      max-height: 240px;
+      overflow-y: auto;
+      text-align: left;
+      margin: 15px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 6px;
+    }
+    .study-note-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .study-note-item canvas {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+    .study-note-info {
+      font-size: 12px;
+      line-height: 1.4;
+      color: #cde6ff;
+    }
+    .study-note-info strong {
+      color: #fff;
+      font-size: 13px;
     }
 
     /* 図鑑モーダル */
@@ -738,7 +936,7 @@
       border: none;
       color: #a0d4ff;
       font-family: var(--font-main);
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       padding: 6px 16px;
       cursor: pointer;
@@ -755,29 +953,29 @@
       padding-right: 8px;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 15px;
+      gap: 14px;
     }
 
     .enc-item {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(0, 240, 255, 0.25);
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
     }
     .enc-item canvas {
-      width: 70px;
-      height: 70px;
-      margin-bottom: 8px;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 6px;
     }
     .enc-item-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
       color: var(--primary-cyan);
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
     .enc-item-desc {
       font-size: 11px;
@@ -803,12 +1001,13 @@
       .mode-select-grid {
         grid-template-columns: 1fr;
       }
-      .status-bar-row {
-        margin-bottom: 4px;
-      }
       .sonar-radar-box {
-        width: 90px;
-        height: 90px;
+        width: 85px;
+        height: 85px;
+      }
+      .compare-boxes-container {
+        flex-direction: column;
+        gap: 10px;
       }
     }
   </style>
@@ -821,7 +1020,11 @@
   <!-- 水中・ガラス・光エフェクト -->
   <div id="caustics-overlay"></div>
   <div id="stealth-vignette"></div>
+  <div id="dive-splash-overlay"></div>
   <div id="damage-flash"></div>
+
+  <!-- 3D追従ターゲットHUDブラケットレイヤー -->
+  <div id="hud-markers-container"></div>
 
   <!-- HUD オーバーレイ -->
   <div id="hud-layer">
@@ -831,7 +1034,7 @@
       <div class="ship-status-panel">
         <div class="status-bar-row">
           <div class="status-label">
-            <span><i class="fa-solid fa-wind"></i> O₂ 酸素残量</span>
+            <span><i class="fa-solid fa-wind"></i> <ruby>O₂ 酸素<rt>さんそ</rt></ruby><ruby>残量<rt>ざんりょう</rt></ruby></span>
             <span id="o2-val-text">100%</span>
           </div>
           <div class="progress-bar-bg">
@@ -841,7 +1044,7 @@
 
         <div class="status-bar-row">
           <div class="status-label">
-            <span><i class="fa-solid fa-shield-halved"></i> シールド耐久</span>
+            <span><i class="fa-solid fa-shield-halved"></i> シールド<ruby>耐久<rt>たいきゅう</rt></ruby></span>
             <span id="shield-val-text">100%</span>
           </div>
           <div class="progress-bar-bg">
@@ -850,8 +1053,8 @@
         </div>
 
         <div class="metrics-row">
-          <div class="metric-item">深度: <span id="metric-depth">0.0</span> m</div>
-          <div class="metric-item">速力: <span id="metric-speed">0.0</span> kt</div>
+          <div class="metric-item"><ruby>深度<rt>しんど</rt></ruby>: <span id="metric-depth">0.0</span> m</div>
+          <div class="metric-item"><ruby>速力<rt>そくりょく</rt></ruby>: <span id="metric-speed">0.0</span> kt</div>
         </div>
       </div>
 
@@ -861,15 +1064,18 @@
           <div class="stage-badge" id="hud-stage-badge">STAGE 1/5</div>
           <div class="mode-badge" id="hud-mode-badge">ノーマル</div>
         </div>
-        <div class="mission-prompt-title">▼ 探索ターゲットのお題</div>
-        <div class="mission-prompt-text" id="mission-target-text">「学校」の地図記号を探せ！</div>
-        <div class="mission-hint-sub" id="mission-target-hint">海中を探索して正しいシンボルのオーブを回収しよう</div>
+        <div class="mission-prompt-title">▼ <ruby>探索<rt>たんさく</rt></ruby>ターゲットのお<ruby>題<rt>だい</rt></ruby></div>
+        <div class="mission-prompt-text">
+          <span id="mission-target-text">「学校」の地図記号を探せ！</span>
+          <button class="mission-tts-btn" id="btn-hud-tts" title="音声で読み上げ"><i class="fa-solid fa-volume-high"></i></button>
+        </div>
+        <div class="mission-hint-sub" id="mission-target-hint">光る球体に近づいて[F]キーで回収しよう</div>
       </div>
 
       <!-- レーダー & アクションボタン -->
       <div class="radar-actions-panel">
         <div class="sonar-radar-box">
-          <canvas id="radar-canvas" width="130" height="130"></canvas>
+          <canvas id="radar-canvas" width="120" height="120"></canvas>
           <div class="radar-sweep"></div>
         </div>
         <div class="top-action-buttons">
@@ -879,39 +1085,45 @@
           <button class="hud-btn" id="btn-open-encyclopedia" title="大図鑑を開く">
             <i class="fa-solid fa-book-open"></i>
           </button>
-          <button class="hud-btn" id="btn-sound-toggle" title="サウンドON/OFF">
+          <button class="hud-btn" id="btn-tts-toggle" title="音声読み上げON/OFF">
+            <i class="fa-solid fa-comment-dots"></i>
+          </button>
+          <button class="hud-btn" id="btn-sound-toggle" title="効果音ON/OFF">
             <i class="fa-solid fa-volume-high"></i>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 中央通知 (ステルス & 警告) -->
+    <!-- 中央通知 (ステルス & 警告 & ナビ矢印) -->
     <div class="hud-center-alerts">
+      <div class="target-nav-arrow" id="target-nav-arrow">
+        <i class="fa-solid fa-compass"></i> 正解の球体は <span id="nav-arrow-dir">前方</span> (約<span id="nav-arrow-dist">25</span>m)
+      </div>
       <div class="stealth-indicator" id="stealth-badge">
-        <i class="fa-solid fa-leaf"></i> 🌿 ステルス隠蔽中 (敵から見つかりません)
+        <i class="fa-solid fa-leaf"></i> 🌿 ステルス<ruby>隠蔽中<rt>いんぺいちゅう</rt></ruby> (<ruby>敵<rt>てき</rt></ruby>から<ruby>見<rt>み</rt></ruby>つかりません)
       </div>
       <div class="warning-alert-box" id="enemy-alert-badge">
-        <i class="fa-solid fa-triangle-exclamation"></i> 敵生物が接近中！海藻や神殿に隠れろ！
+        <i class="fa-solid fa-triangle-exclamation"></i> <ruby>敵<rt>てき</rt></ruby><ruby>生物<rt>せいぶつ</rt></ruby>が<ruby>接近中<rt>せっきんちゅう</rt></ruby>！<ruby>海藻<rt>かいそう</rt></ruby>や<ruby>神殿<rt>しんでん</rt></ruby>に<ruby>隠<rt>かく</rt></ruby>れろ！
       </div>
     </div>
 
     <!-- 下部: コントロール凡例 & アクション -->
     <div class="hud-footer">
       <div class="controls-legend">
-        <div><span class="key-badge">W/S</span> 前進/後退</div>
-        <div><span class="key-badge">A/D</span> 旋回</div>
-        <div><span class="key-badge">Q/E</span> 浮上/潜航</div>
+        <div><span class="key-badge">W/S</span> <ruby>前進<rt>ぜんしん</rt></ruby>/<ruby>後退<rt>こうたい</rt></ruby></div>
+        <div><span class="key-badge">A/D</span> <ruby>旋回<rt>せんかい</rt></ruby></div>
+        <div><span class="key-badge">Q/E</span> <ruby>浮上<rt>ふじょう</rt></ruby>/<ruby>潜航<rt>せんこう</rt></ruby></div>
         <div><span class="key-badge">SPACE</span> ソナー</div>
-        <div><span class="key-badge">F</span> 回収</div>
+        <div><span class="key-badge">F</span> <ruby>回収<rt>かいしゅう</rt></ruby></div>
       </div>
 
       <div class="action-hud-center">
         <button class="big-hud-btn" id="btn-sonar-ping">
-          <i class="fa-solid fa-satellite-dish"></i> ソナー波探知
+          <i class="fa-solid fa-satellite-dish"></i> ソナー<ruby>探知<rt>たんち</rt></ruby><ruby>波<rt>は</rt></ruby>
         </button>
         <button class="big-hud-btn" id="btn-collect-target">
-          <i class="fa-solid fa-magnet"></i> ターゲット回収 [F]
+          <i class="fa-solid fa-magnet"></i> ターゲット<ruby>回収<rt>かいしゅう</rt></ruby> [F]
         </button>
       </div>
     </div>
@@ -932,7 +1144,7 @@
   <div class="modal-overlay open" id="modal-start">
     <div class="modal-card">
       <h1 class="modal-title">🌊 3D水族館潜水艦探検</h1>
-      <p class="modal-subtitle">小学校で習う「地図記号」と「単位」を深海水槽で大捜索！</p>
+      <p class="modal-subtitle"><ruby>小学校<rt>しょうがっこう</rt></ruby>で習う「<ruby>地図記号<rt>ちずきごう</rt></ruby>」と「<ruby>単位<rt>たんい</rt></ruby>」を深海水槽で大捜索！</p>
 
       <div class="mode-select-grid">
         <div class="mode-card easy" data-mode="easy">
@@ -952,97 +1164,154 @@
         </div>
       </div>
 
-      <div style="margin-bottom: 20px;">
+      <div style="margin-bottom: 18px;">
         <button class="primary-btn" id="btn-start-game">
-          <i class="fa-solid fa-play"></i> 潜航開始 (START)
+          <i class="fa-solid fa-play"></i> <ruby>探検<rt>たんけん</rt></ruby>を<ruby>始<rt>はじ</rt></ruby>める
         </button>
         <button class="secondary-btn" id="btn-open-guide">
-          <i class="fa-solid fa-book"></i> 記号・単位大図鑑
+          <i class="fa-solid fa-book"></i> <ruby>記号<rt>きごう</rt></ruby>・<ruby>単位<rt>たんい</rt></ruby><ruby>大図鑑<rt>だいずかん</rt></ruby>
         </button>
       </div>
 
       <div style="font-size: 12px; color: #8ec3eb; line-height: 1.6;">
-        💡 <strong>潜水艦のヒント</strong>: 水面に出ると酸素が回復！危険な魚が来たら「海藻の森」や「アトランティスの遺跡」に身を隠そう！
+        💡 <strong>学びのポイント</strong>: 各ステージの開始前に「お題の形と意味」の指令書が表示されます。しっかり覚えてから潜航しよう！
       </div>
     </div>
   </div>
 
-  <!-- 2. 正解・解説モーダル -->
+  <!-- 2. 【教育的予習ステップ】潜航ミッションブリーフィング（指令書）モーダル -->
+  <div class="modal-overlay" id="modal-briefing">
+    <div class="modal-card briefing-card">
+      <div class="briefing-badge">
+        <i class="fa-solid fa-clipboard-list"></i> <ruby>潜航<rt>せんこう</rt></ruby><ruby>指令書<rt>しれいしょ</rt></ruby> : <span id="briefing-stage-name">STAGE 1</span>
+      </div>
+
+      <h2 class="modal-title" id="briefing-mission-title">「学校」を探せ！</h2>
+
+      <!-- 探す球体の3D回転プレビュー -->
+      <div class="briefing-orb-preview">
+        <canvas id="briefing-canvas" width="140" height="140"></canvas>
+      </div>
+
+      <div class="briefing-explanation-card">
+        <div><strong>【形と意味の由来】</strong></div>
+        <div id="briefing-origin-text">文という漢字をモチーフにして作られた記号だよ！小・中学校を表すよ。</div>
+        <div class="briefing-caution" id="briefing-caution-text">
+          ⚠️ <strong>ここが紛らわしい！</strong> 高校は「文」の周りに丸◯がつきます。交番や警察署と間違えないようにしよう！
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+        <button class="secondary-btn" id="btn-briefing-tts" style="margin:0;">
+          <i class="fa-solid fa-volume-high"></i> 音声で聞く
+        </button>
+        <button class="primary-btn" id="btn-start-dive" style="background: linear-gradient(90deg, #00f0ff, #0072ff);">
+          <i class="fa-solid fa-water"></i> 理解した！深海へ潜航開始 (DIVE!)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 正解・解説モーダル -->
   <div class="modal-overlay" id="modal-explanation">
     <div class="modal-card">
-      <div class="result-badge badge-correct" id="modal-result-badge">
+      <div class="briefing-badge" style="border-color: var(--accent-green); color: var(--accent-green); background: rgba(0,255,136,0.15);">
         <i class="fa-solid fa-circle-check"></i> 正解！ターゲット回収成功！
       </div>
       <h2 class="modal-title" id="modal-exp-title">「学校」の地図記号</h2>
       
-      <div class="explanation-icon-display">
-        <canvas id="exp-icon-canvas" width="100" height="100"></canvas>
+      <div class="briefing-orb-preview" style="border-color: var(--accent-green); width: 110px; height: 110px;">
+        <canvas id="exp-icon-canvas" width="110" height="110"></canvas>
       </div>
 
-      <div class="explanation-box" id="modal-exp-body">
-        <strong>【由来・意味】</strong><br>
-        「文」という漢字をモチーフにして作られた記号だよ！小・中学校を表すよ。高校は丸で囲まれるんだ。
+      <div class="briefing-explanation-card" id="modal-exp-body" style="border-left-color: var(--accent-green);">
+        <strong>【小学校の学び・解説】</strong><br>
+        「文」という漢字をモチーフにして作られた記号だよ！
       </div>
 
-      <div>
+      <div style="display: flex; justify-content: center; gap: 10px;">
+        <button class="secondary-btn" id="btn-exp-tts" style="margin:0;">
+          <i class="fa-solid fa-volume-high"></i> 音声で聞く
+        </button>
         <button class="primary-btn" id="btn-next-stage">
-          次なる深海ステージへ潜航 <i class="fa-solid fa-chevron-down"></i>
+          次なる指令へ進む <i class="fa-solid fa-chevron-right"></i>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- 3. 不正解・警告モーダル -->
+  <!-- 4. 不正解・比較学習モーダル (間違えたものと本物を並べて比較) -->
   <div class="modal-overlay" id="modal-wrong">
     <div class="modal-card">
-      <div class="result-badge badge-wrong">
-        <i class="fa-solid fa-triangle-exclamation"></i> それはダミーの記号だ！
+      <div class="briefing-badge" style="border-color: var(--danger-red); color: var(--danger-red); background: rgba(255,51,102,0.15);">
+        <i class="fa-solid fa-triangle-exclamation"></i> それはダミーの球体だ！
       </div>
-      <h2 class="modal-title" id="modal-wrong-title">交番の記号</h2>
+      <h2 class="modal-title" style="color: #ff99aa;">形を比べてみよう！</h2>
 
-      <div class="explanation-icon-display">
-        <canvas id="wrong-icon-canvas" width="100" height="100"></canvas>
+      <div class="compare-boxes-container">
+        <!-- あなたが選んだ球体 -->
+        <div class="compare-box wrong-one">
+          <div class="compare-title" style="color: var(--danger-red);">❌ あなたが選んだ記号</div>
+          <canvas id="wrong-compare-canvas" width="80" height="80"></canvas>
+          <div style="font-size: 12px; font-weight: bold;" id="wrong-symbol-name">交番</div>
+        </div>
+        <!-- 探すべき本物 -->
+        <div class="compare-box correct-one">
+          <div class="compare-title" style="color: var(--accent-green);">⭕ 探している本物</div>
+          <canvas id="correct-compare-canvas" width="80" height="80"></canvas>
+          <div style="font-size: 12px; font-weight: bold;" id="correct-symbol-name">消防署</div>
+        </div>
       </div>
 
-      <div class="explanation-box" id="modal-wrong-body">
-        これは「交番」の記号だよ！警察官の警棒が交差した警察署(✕)に、丸をつけたものなんだ。<br>
-        シールドに少しダメージを受けたぞ！もう一度本物を探そう！
+      <div class="briefing-explanation-card" id="modal-wrong-body" style="border-left-color: var(--danger-red);">
+        これは「交番」の記号だよ！本物の「消防署」はさすまたの形をしているよ！<br>
+        シールドに少しダメージを受けたぞ！もう一度海中に潜って探そう！
       </div>
 
       <div>
         <button class="primary-btn" id="btn-resume-search">
-          探索を再開する <i class="fa-solid fa-rotate-right"></i>
+          もう一度探す <i class="fa-solid fa-rotate-right"></i>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- 4. ゲームクリア・リザルトモーダル -->
+  <!-- 5. ゲームクリア・学習達成レポートモーダル -->
   <div class="modal-overlay" id="modal-clear">
-    <div class="modal-card">
-      <h1 class="modal-title" style="color: var(--accent-gold);">🏆 全5ステージ完全制覇！</h1>
-      <p class="modal-subtitle">水族館の深海調査を見事完了しました！</p>
+    <div class="modal-card" style="max-width: 680px;">
+      <h1 class="modal-title" style="color: var(--accent-gold);">🏆 全5問完全制覇！探査完了</h1>
+      <p class="modal-subtitle">水族館の深海調査をやり遂げ、マスター称号を獲得しました！</p>
 
-      <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
-        <div style="font-size: 40px; font-weight: 900; color: var(--accent-gold); margin-bottom: 8px;" id="res-rank-text">RANK S</div>
-        <div style="font-size: 16px; color: #fff; margin-bottom: 12px;" id="res-title-text">🏅 一級・深海地図記号マスター</div>
-        <div style="display: flex; justify-content: space-around; font-size: 13px; color: #9cd5ff;">
+      <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 14px; margin-bottom: 15px;">
+        <div style="font-size: 36px; font-weight: 900; color: var(--accent-gold); margin-bottom: 4px;" id="res-rank-text">RANK S</div>
+        <div style="font-size: 15px; color: #fff; margin-bottom: 8px;" id="res-title-text">🏅 特級・深海地図記号マスター</div>
+        <div style="display: flex; justify-content: space-around; font-size: 12px; color: #9cd5ff;">
           <div>クリア時間: <span id="res-time-text" style="color:#fff; font-weight:bold;">02:15</span></div>
           <div>ダミー接触: <span id="res-miss-text" style="color:#fff; font-weight:bold;">0回</span></div>
-          <div>ステルス回数: <span id="res-stealth-text" style="color:#fff; font-weight:bold;">3回</span></div>
+          <div>ステルス成功: <span id="res-stealth-text" style="color:#fff; font-weight:bold;">3回</span></div>
         </div>
       </div>
 
-      <button class="primary-btn" id="btn-replay">
-        もう一度挑戦する <i class="fa-solid fa-arrow-rotate-left"></i>
-      </button>
-      <button class="secondary-btn" id="btn-clear-open-guide">
-        大図鑑で復習する
-      </button>
+      <!-- 今回学んだこと おさらいノート一覧 -->
+      <div style="text-align: left; font-size: 13px; font-weight: bold; color: var(--primary-cyan); margin-bottom: 6px;">
+        📝 本日の深海学習ノート (覚えた記号・単位)
+      </div>
+      <div class="study-notes-list" id="study-notes-list">
+        <!-- JSで動的生成 -->
+      </div>
+
+      <div style="margin-top: 15px;">
+        <button class="primary-btn" id="btn-replay">
+          もう一度挑戦する <i class="fa-solid fa-arrow-rotate-left"></i>
+        </button>
+        <button class="secondary-btn" id="btn-clear-open-guide">
+          大図鑑でさらに復習
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- 5. ゲームオーバーモーダル -->
+  <!-- 6. ゲームオーバーモーダル -->
   <div class="modal-overlay" id="modal-gameover">
     <div class="modal-card">
       <h1 class="modal-title" style="color: var(--danger-red);">🚨 船体限界！緊急浮上</h1>
@@ -1059,17 +1328,17 @@
     </div>
   </div>
 
-  <!-- 6. 小学校 地図記号＆単位 大図鑑モーダル -->
+  <!-- 7. 小学校 地図記号＆単位 大図鑑モーダル -->
   <div class="modal-overlay" id="modal-encyclopedia">
     <div class="modal-card encyclopedia-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h2 class="modal-title" style="margin: 0; font-size: 22px;">📖 小学校 地図記号＆単位 大図鑑</h2>
+        <h2 class="modal-title" style="margin: 0; font-size: 20px;">📖 小学校 地図記号＆単位 大図鑑</h2>
         <button class="hud-btn" id="btn-close-encyclopedia"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="tab-bar">
-        <button class="tab-btn active" id="tab-btn-map">🗺️ 地図記号 (社会)</button>
-        <button class="tab-btn" id="tab-btn-units">📏 算数の単位 (算数)</button>
+        <button class="tab-btn active" id="tab-btn-map">🗺️ 地図記号 (社会科)</button>
+        <button class="tab-btn" id="tab-btn-units">📏 算数の単位 (算数科)</button>
       </div>
 
       <div class="encyclopedia-scroll-area" id="enc-content-grid">
@@ -1092,12 +1361,13 @@
         type: 'map',
         draw: (ctx, s) => {
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.75}px serif`;
+          ctx.font = `bold ${s * 0.72}px serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText('文', s / 2, s / 2);
         },
-        origin: '「文字」の「文」という漢字をそのまま図案化したもの。小学校と中学校を表します。高校は「文」の周りに丸◯がつきます。'
+        origin: '「文字」の「文」という漢字をそのまま図案化したもの。小学校と中学校を表します。高校は「文」の周りに丸◯がつきます。',
+        caution: '高校の記号(◯の中に文)と間違えないようにしましょう！'
       },
       police: {
         id: 'police',
@@ -1113,7 +1383,8 @@
           ctx.lineTo(s * 0.22, s * 0.78);
           ctx.stroke();
         },
-        origin: '警察官が昔持っていた「交差させた警棒（けいぼう）」の形から作られました。交番(⊗)と間違えやすいので注意！'
+        origin: '警察官が昔持っていた「交差させた警棒（けいぼう）」の形から作られました。',
+        caution: '交番(⊗)は丸で囲まれていますが、警察署(✕)は丸がありません！'
       },
       koban: {
         id: 'koban',
@@ -1132,7 +1403,8 @@
           ctx.lineTo(s * 0.26, s * 0.74);
           ctx.stroke();
         },
-        origin: '警察署の記号(✕)のまわりを丸◯で囲った形。街の身近な交番を表します。'
+        origin: '警察署の記号(✕)のまわりを丸◯で囲った形。街の身近な交番を表します。',
+        caution: '丸の中に✕があるのが交番です。警察署との違いをしっかり見分けよう！'
       },
       post: {
         id: 'post',
@@ -1150,7 +1422,8 @@
           ctx.lineTo(s / 2, s * 0.78);
           ctx.stroke();
         },
-        origin: '昔の郵便をつかさどっていた「逓信省（ていしんしょう）」の「テ」を図案化したマーク(〒)です。'
+        origin: '昔の郵便をつかさどっていた「逓信省（ていしんしょう）」の「テ」を図案化したマーク(〒)です。',
+        caution: '手紙やハガキを出すポストのマークとしても身近ですね！'
       },
       fire: {
         id: 'fire',
@@ -1167,7 +1440,8 @@
           ctx.lineTo(s * 0.8, s * 0.22);
           ctx.stroke();
         },
-        origin: '昔の江戸の火消しが、火事を消すときに屋根を壊すために使った道具「さすまた」の形から作られました。'
+        origin: '昔の江戸の火消しが、火事を消すときに屋根を壊すために使った道具「さすまた」の形から作られました。',
+        caution: 'Y字型のさすまたです。警察署(✕)や工場(歯車)と間違えないように！'
       },
       hospital: {
         id: 'hospital',
@@ -1181,7 +1455,8 @@
           ctx.fillRect(s * 0.43, s * 0.26, s * 0.14, s * 0.48);
           ctx.fillRect(s * 0.26, s * 0.43, s * 0.48, s * 0.14);
         },
-        origin: '赤十字のマークを四角い囲みで守った形。お医者さんが何人もいる大きな総合病院などを表します。'
+        origin: '赤十字のマークを四角い囲みで守った形。お医者さんが何人もいる大きな総合病院などを表します。',
+        caution: '四角い枠の中に十字があります。個人の診療所ではなく大きな病院です。'
       },
       cityhall: {
         id: 'cityhall',
@@ -1197,7 +1472,8 @@
           ctx.arc(s / 2, s / 2, s * 0.2, 0, Math.PI * 2);
           ctx.stroke();
         },
-        origin: '市の中心であることを表す「二重丸◎」。町村役場は丸の中に黒点（⊙）なので見分けよう！'
+        origin: '市の中心であることを表す「二重丸◎」。',
+        caution: '町村役場は丸の中に黒点（⊙）です。二重丸◎が市役所・区役所！'
       },
       townhall: {
         id: 'townhall',
@@ -1214,7 +1490,8 @@
           ctx.arc(s / 2, s / 2, s * 0.12, 0, Math.PI * 2);
           ctx.fill();
         },
-        origin: '円の中に小さな丸（点）を置いた形。町や村の役場を表します。'
+        origin: '円の中に小さな丸（黒点）を置いた形。町や村の役場を表します。',
+        caution: '中心が塗りつぶされているのが町村役場(⊙)です。'
       },
       jinja: {
         id: 'jinja',
@@ -1234,7 +1511,8 @@
           ctx.lineTo(s * 0.68, s * 0.8);
           ctx.stroke();
         },
-        origin: '神社への入り口にある「鳥居（とりい）」の形そのものをシンプルに描いています。'
+        origin: '神社への入り口にある「鳥居（とりい）」の形そのものをシンプルに描いています。',
+        caution: 'お寺（卍）と混同しないように！鳥居が神社です。'
       },
       temple: {
         id: 'temple',
@@ -1245,12 +1523,12 @@
           ctx.lineWidth = s * 0.11;
           const h = s / 2;
           ctx.beginPath();
-          // 卍
           ctx.moveTo(s * 0.24, s * 0.3); ctx.lineTo(h, s * 0.3); ctx.lineTo(h, s * 0.7); ctx.lineTo(s * 0.76, s * 0.7);
           ctx.moveTo(s * 0.7, s * 0.24); ctx.lineTo(s * 0.7, h); ctx.lineTo(s * 0.3, h); ctx.lineTo(s * 0.3, s * 0.76);
           ctx.stroke();
         },
-        origin: '仏教で幸運や徳をあらわす神聖な記号「卍（まんじ）」から作られました。'
+        origin: '仏教で幸運や徳をあらわす神聖な記号「卍（まんじ）」から作られました。',
+        caution: '鳥居は神社、卍はお寺です。書き順や向きに注意しよう！'
       },
       factory: {
         id: 'factory',
@@ -1262,7 +1540,6 @@
           ctx.beginPath();
           ctx.arc(s / 2, s / 2, s * 0.22, 0, Math.PI * 2);
           ctx.stroke();
-          // 8枚の歯
           for (let i = 0; i < 8; i++) {
             const ang = (i * Math.PI) / 4;
             const x1 = s / 2 + Math.cos(ang) * (s * 0.22);
@@ -1274,7 +1551,8 @@
             ctx.stroke();
           }
         },
-        origin: '機械を動かす「歯車（はぐるま）」の形から作られました。ものづくりを行う工場を表します。'
+        origin: '機械を動かす「歯車（はぐるま）」の形から作られました。',
+        caution: '風車（三枚羽根）や発電所（歯車＋電気）と見分けよう！'
       },
       onsen: {
         id: 'onsen',
@@ -1286,14 +1564,14 @@
           ctx.beginPath();
           ctx.ellipse(s / 2, s * 0.7, s * 0.32, s * 0.1, 0, 0, Math.PI * 2);
           ctx.stroke();
-          // 湯気3本
           ctx.beginPath();
           ctx.moveTo(s * 0.35, s * 0.58); ctx.quadraticCurveTo(s * 0.3, s * 0.45, s * 0.36, s * 0.32);
           ctx.moveTo(s / 2, s * 0.58); ctx.quadraticCurveTo(s * 0.45, s * 0.4, s * 0.52, s * 0.22);
           ctx.moveTo(s * 0.65, s * 0.58); ctx.quadraticCurveTo(s * 0.6, s * 0.45, s * 0.66, s * 0.32);
           ctx.stroke();
         },
-        origin: '温泉の湯船から、ふわふわと湯気（ゆげ）が立ち上っている様子を描いた記号です。'
+        origin: '温泉の湯船から、ふわふわと湯気（ゆげ）が立ち上っている様子を描いた記号です。',
+        caution: '3本の湯気の長さ（真ん中が一番長い）も特徴です！'
       },
       nursing: {
         id: 'nursing',
@@ -1302,7 +1580,6 @@
         draw: (ctx, s) => {
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = s * 0.08;
-          // 家
           ctx.beginPath();
           ctx.moveTo(s / 2, s * 0.18);
           ctx.lineTo(s * 0.18, s * 0.45);
@@ -1313,13 +1590,13 @@
           ctx.lineTo(s * 0.82, s * 0.45);
           ctx.closePath();
           ctx.stroke();
-          // 中の杖
           ctx.beginPath();
           ctx.arc(s * 0.46, s * 0.52, s * 0.08, Math.PI, 0);
           ctx.lineTo(s * 0.54, s * 0.7);
           ctx.stroke();
         },
-        origin: '住まいの「建物」の中に、お年寄りが使う「杖（つえ）」を組み合わせた平成生まれの新しい記号です。'
+        origin: '住まいの「建物」の中に、お年寄りが使う「杖（つえ）」を組み合わせた平成生まれの新しい記号です。',
+        caution: '建物の中に杖があるのが目印！病院(十字)としっかり区別しよう！'
       },
       conifer: {
         id: 'conifer',
@@ -1337,7 +1614,8 @@
           ctx.lineTo(s / 2, s * 0.8);
           ctx.stroke();
         },
-        origin: 'スギやマツなどの尖った葉っぱの木（針葉樹）の形から作られました。三角形にとがっています。'
+        origin: 'スギやマツなどの尖った葉っぱの木（針葉樹）の形から作られました。三角形にとがっています。',
+        caution: '丸い形の広葉樹林と見分けよう！三角に尖っているのが針葉樹林です。'
       }
     },
 
@@ -1358,7 +1636,8 @@
           ctx.fillStyle = '#a0e0ff';
           ctx.fillText('(= 1m)', s / 2, s * 0.7);
         },
-        origin: '【長さ】1m（メートル）は100cm（センチメートル）。「c（センチ）」は「100分の1」を表すよ。'
+        origin: '【長さ】1m（メートル）は100cm（センチメートル）。「c（センチ）」は「100分の1」を表します。',
+        caution: '10cmや1000cmと間違えないように！定規の1mは100cmです。'
       },
       km_to_m: {
         id: 'km_to_m',
@@ -1375,7 +1654,8 @@
           ctx.fillStyle = '#a0e0ff';
           ctx.fillText('(= 1km)', s / 2, s * 0.7);
         },
-        origin: '【長さ】1km（キロメートル）は1000m。「k（キロ）」は「1000倍」という意味があるよ！'
+        origin: '【長さ】1km（キロメートル）は1000m。「k（キロ）」は「1000倍」という意味があるよ！',
+        caution: 'キロがついたら1000倍！1kmは1000mです。'
       },
       kg_to_g: {
         id: 'kg_to_g',
@@ -1392,24 +1672,8 @@
           ctx.fillStyle = '#a0e0ff';
           ctx.fillText('(= 1kg)', s / 2, s * 0.7);
         },
-        origin: '【重さ】1kg（キログラム）は1000g（グラム）。これも「k（キロ）」だから1000倍！'
-      },
-      t_to_kg: {
-        id: 't_to_kg',
-        name: '1t = 1000kg',
-        type: 'unit',
-        shortText: '1000kg',
-        draw: (ctx, s) => {
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.25}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('1000kg', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.18}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 1t)', s / 2, s * 0.7);
-        },
-        origin: '【重さ】1t（トン）は1000kg。ゾウやトラックなどの巨大な重さを量る単位だよ。'
+        origin: '【重さ】1kg（キログラム）は1000g（グラム）。これも「k（キロ）」だから1000倍！',
+        caution: '100gと勘違いしやすいので注意！1kgは1000gです。'
       },
       l_to_dl: {
         id: 'l_to_dl',
@@ -1426,24 +1690,8 @@
           ctx.fillStyle = '#a0e0ff';
           ctx.fillText('(= 1L)', s / 2, s * 0.7);
         },
-        origin: '【かさ・体積】1L（リットル）は10dL（デシリットル）。「d（デシ）」は「10分の1」を表すよ。'
-      },
-      l_to_ml: {
-        id: 'l_to_ml',
-        name: '1L = 1000mL',
-        type: 'unit',
-        shortText: '1000mL',
-        draw: (ctx, s) => {
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.24}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('1000mL', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.18}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 1L)', s / 2, s * 0.7);
-        },
-        origin: '【かさ・体積】1Lは1000mL（ミリリットル）。「m（ミリ）」は「1000分の1」という意味だよ！'
+        origin: '【かさ・体積】1L（リットル）は10dL（デシリットル）。「d（デシ）」は「10分の1」を表すよ。',
+        caution: '100dLではなく「10dL」です！牛乳パック1Lは10dL！'
       },
       ha_to_m2: {
         id: 'ha_to_m2',
@@ -1460,7 +1708,8 @@
           ctx.fillStyle = '#a0e0ff';
           ctx.fillText('(= 1ha)', s / 2, s * 0.7);
         },
-        origin: '【面積】1辺が100mの正方形の面積が1ha（ヘクタール）= 10000m²。1haは100a（アール）でもあるよ！'
+        origin: '【面積】1辺が100mの正方形の面積が1ha（ヘクタール）= 10000m²。1haは100a（アール）でもあるよ！',
+        caution: '100m × 100m = 10,000m² です。0の数（4個）をしっかり数えよう！'
       },
       m3_to_l: {
         id: 'm3_to_l',
@@ -1477,7 +1726,8 @@
           ctx.fillStyle = '#a0e0ff';
           ctx.fillText('(= 1m³)', s / 2, s * 0.7);
         },
-        origin: '【体積】1辺が1mの立方体の体積が1m³。水を入れるとぴったり1000L（100万cm³）入るよ！'
+        origin: '【体積】1辺が1mの立方体の体積が1m³。水を入れるとぴったり1000L（100万cm³）入るよ！',
+        caution: '100Lではなく「1000L」です。お風呂約5杯分に相当します！'
       },
       calc_3500ml: {
         id: 'calc_3500ml',
@@ -1494,7 +1744,8 @@
           ctx.fillStyle = '#a0e0ff';
           ctx.fillText('(= 3500mL)', s / 2, s * 0.7);
         },
-        origin: '【単位の計算】1000mL=1L、100mL=1dLなので、3500mLは「3L 5dL」または「3.5L」になるよ！'
+        origin: '【単位の計算】1000mL=1L、100mL=1dLなので、3500mLは「3L 5dL」または「3.5L」になるよ！',
+        caution: '35Lや3L 50dLと間違えやすいので位取りに注目しよう！'
       }
     }
   };
@@ -1510,7 +1761,7 @@
         title: '浅瀬のサンゴ礁',
         depthTarget: 8,
         question: '「学校 (小・中学校)」の地図記号を探せ！',
-        hint: 'ノートや文字でおなじみの漢字が目印だよ',
+        hint: '漢字の「文」が描かれた光る球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.school,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.police,
@@ -1524,12 +1775,12 @@
         title: '巨木のケルプ海藻林',
         depthTarget: 16,
         question: '「1メートル (1m)」と同じ長さを探せ！',
-        hint: '1mは何センチメートル(cm)かな？ものさしを思い出そう',
+        hint: '1mは何センチメートル(cm)かな？「100cm」を探そう！',
         correct: KNOWLEDGE_BASE.units.m_to_cm,
         dummies: [
-          { id: 'd_10cm', name: '10cm', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '10cm') },
-          { id: 'd_1000cm', name: '1000cm', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '1000cm') },
-          { id: 'd_1km', name: '100m', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '100m') }
+          { id: 'd_10cm', name: '10cm', type: 'unit', origin: '10cmは1mの10分の1です。', caution: '1mは100cmですよ！', draw: (ctx, s) => drawTextIcon(ctx, s, '10cm') },
+          { id: 'd_1000cm', name: '1000cm', type: 'unit', origin: '1000cmは10mです。', caution: '0が多すぎます！1mは100cmです。', draw: (ctx, s) => drawTextIcon(ctx, s, '1000cm') },
+          { id: 'd_100m', name: '100m', type: 'unit', origin: '100mはプールの4倍の長さです。', caution: '100mではなく100cmです！', draw: (ctx, s) => drawTextIcon(ctx, s, '100m') }
         ]
       },
       {
@@ -1538,7 +1789,7 @@
         title: 'アトランティス古代遺跡',
         depthTarget: 24,
         question: '「郵便局」の地図記号を探せ！',
-        hint: '手紙やハガキでおなじみのあのマークマークだよ',
+        hint: '「〒」のマークが描かれた球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.post,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.jinja,
@@ -1552,12 +1803,12 @@
         title: '発光クリスタルの海溝',
         depthTarget: 32,
         question: '「1キログラム (1kg)」と同じ重さを探せ！',
-        hint: '1kgは何グラム(g)かな？「キロ」は1000倍！',
+        hint: '「キロ」は1000倍！「1000g」の球体を探そう！',
         correct: KNOWLEDGE_BASE.units.kg_to_g,
         dummies: [
-          { id: 'd_10g', name: '10g', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '10g') },
-          { id: 'd_100g', name: '100g', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '100g') },
-          { id: 'd_10000g', name: '10000g', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '10000g') }
+          { id: 'd_10g', name: '10g', type: 'unit', origin: '10gは小さな消しゴムくらいの軽さです。', caution: '1kgは1000gですよ！', draw: (ctx, s) => drawTextIcon(ctx, s, '10g') },
+          { id: 'd_100g', name: '100g', type: 'unit', origin: '100gはバナナ1本くらいの重さです。', caution: '1kgは1000gです！', draw: (ctx, s) => drawTextIcon(ctx, s, '100g') },
+          { id: 'd_10000g', name: '10000g', type: 'unit', origin: '10000gは10kgです。', caution: '0が1つ多いです！1000gを探そう。', draw: (ctx, s) => drawTextIcon(ctx, s, '10000g') }
         ]
       },
       {
@@ -1566,7 +1817,7 @@
         title: 'アビスコア・水族館最深部',
         depthTarget: 42,
         question: '「温泉」の地図記号を探せ！',
-        hint: 'あたたかいお湯から湯気がゆらゆら出ているマーク！',
+        hint: '湯船から湯気が3本立ち上る球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.onsen,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.koban,
@@ -1583,7 +1834,7 @@
         title: '陽光のサンゴ礁パトロール',
         depthTarget: 10,
         question: '「消防署」の地図記号を探せ！',
-        hint: '昔の火消しが使った道具「さすまた」の形だよ',
+        hint: '火消しの道具「さすまた (Y字型)」の球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.fire,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.police,
@@ -1596,13 +1847,13 @@
         biome: 'kelp',
         title: 'ケルプの迷宮とシュモクザメ',
         depthTarget: 18,
-        question: '「1リットル (1L)」と同じかさ(体積)を探せ！',
-        hint: '牛乳パック1本分は、何dLかな？',
+        question: '「1リットル (1L)」と同じかさを探せ！',
+        hint: '牛乳パック1Lは「10dL」！「10dL」の球体を探そう！',
         correct: KNOWLEDGE_BASE.units.l_to_dl,
         dummies: [
-          { id: 'd_100dl', name: '100dL', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '100dL') },
-          { id: 'd_1dl', name: '1dL', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '1dL') },
-          { id: 'd_10ml', name: '10mL', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '10mL') }
+          { id: 'd_100dl', name: '100dL', type: 'unit', origin: '100dLは10Lになってしまいます。', caution: '1Lは10dLです！', draw: (ctx, s) => drawTextIcon(ctx, s, '100dL') },
+          { id: 'd_1dl', name: '1dL', type: 'unit', origin: '1dLはコップ半分の量です。', caution: '1Lは10dLです！', draw: (ctx, s) => drawTextIcon(ctx, s, '1dL') },
+          { id: 'd_10ml', name: '10mL', type: 'unit', origin: '10mLは大さじ1杯弱です。', caution: '1Lは1000mLです！', draw: (ctx, s) => drawTextIcon(ctx, s, '10mL') }
         ]
       },
       {
@@ -1611,7 +1862,7 @@
         title: 'アトランティス神殿と守護エイ',
         depthTarget: 26,
         question: '「市役所・区役所」の地図記号を探せ！',
-        hint: '中心を表す「二重丸」だよ。丸に点の町村役場と区別しよう！',
+        hint: '中心を表す「二重丸◎」の球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.cityhall,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.townhall,
@@ -1625,12 +1876,12 @@
         title: '暗黒海溝と発光アンコウ',
         depthTarget: 34,
         question: '「1ヘクタール (1ha)」と同じ面積を探せ！',
-        hint: '1辺100mの正方形の広さだよ (100m × 100m)',
+        hint: '100m × 100m = 「10000m²」の球体を探そう！',
         correct: KNOWLEDGE_BASE.units.ha_to_m2,
         dummies: [
-          { id: 'd_100m2', name: '100m²', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '100m²') },
-          { id: 'd_1000m2', name: '1000m²', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '1000m²') },
-          { id: 'd_100000m2', name: '100000m²', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '100000m²') }
+          { id: 'd_100m2', name: '100m²', type: 'unit', origin: '100m²は1a（アール）です。', caution: '1haは10,000m²（100a）です！', draw: (ctx, s) => drawTextIcon(ctx, s, '100m²') },
+          { id: 'd_1000m2', name: '1000m²', type: 'unit', origin: '1000m²は1haの10分の1です。', caution: '1haは10,000m²です！', draw: (ctx, s) => drawTextIcon(ctx, s, '1000m²') },
+          { id: 'd_100000m2', name: '100000m²', type: 'unit', origin: '100,000m²は10haです。', caution: '0の数に注意！10,000m²です。', draw: (ctx, s) => drawTextIcon(ctx, s, '100000m²') }
         ]
       },
       {
@@ -1639,7 +1890,7 @@
         title: 'メガロドンの聖域',
         depthTarget: 45,
         question: '「寺院 (お寺)」の地図記号を探せ！',
-        hint: '神社の鳥居ではなく、神聖な「卍」のマークだよ',
+        hint: '神聖な「卍（まんじ）」の球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.temple,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.jinja,
@@ -1656,7 +1907,7 @@
         title: '機雷ドローン警戒海域',
         depthTarget: 12,
         question: '「老人ホーム」の地図記号を探せ！',
-        hint: '建物のマークの中に、お年寄りが使う「杖」があるよ',
+        hint: '建物の中に「杖（つえ）」がある球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.nursing,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.hospital,
@@ -1669,13 +1920,13 @@
         biome: 'kelp',
         title: 'ハンターシャーク回廊',
         depthTarget: 20,
-        question: '「1立方メートル (1m³)」と同じ体積(かさ)を探せ！',
-        hint: '1辺1mの立方体に入る水の量だよ。何リットルかな？',
+        question: '「1立方メートル (1m³)」と同じ体積を探せ！',
+        hint: '1辺1mの立方体に入る水の量は「1000L」！',
         correct: KNOWLEDGE_BASE.units.m3_to_l,
         dummies: [
-          { id: 'd_100l', name: '100L', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '100L') },
-          { id: 'd_10000l', name: '10000L', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '10000L') },
-          { id: 'd_1000000l', name: '1000000L', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '1000000L') }
+          { id: 'd_100l', name: '100L', type: 'unit', origin: '100Lは家庭のお風呂の半分ほどです。', caution: '1m³は1000L入ります！', draw: (ctx, s) => drawTextIcon(ctx, s, '100L') },
+          { id: 'd_10000l', name: '10000L', type: 'unit', origin: '10000Lは10m³です。', caution: '0が1つ多いです！1000Lを探そう。', draw: (ctx, s) => drawTextIcon(ctx, s, '10000L') },
+          { id: 'd_1000000l', name: '1000000L', type: 'unit', origin: '100万Lは競泳用プール並みの量です。', caution: '1m³は1000Lです！', draw: (ctx, s) => drawTextIcon(ctx, s, '1000000L') }
         ]
       },
       {
@@ -1684,7 +1935,7 @@
         title: '沈没神殿のメカ・マンタレイ',
         depthTarget: 28,
         question: '「工場」の地図記号を探せ！',
-        hint: '機械を動かす「歯車」の形から作られたよ',
+        hint: '機械を動かす「歯車（はぐるま）」の球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.factory,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.fire,
@@ -1698,12 +1949,12 @@
         title: '深海巨大アンコウの巣窟',
         depthTarget: 36,
         question: '「3500mL」を換算した正しい表記を探せ！',
-        hint: '1000mL=1L、100mL=1dL を思い出して計算しよう！',
+        hint: '1000mL=1L、100mL=1dLより「3L 5dL」を探そう！',
         correct: KNOWLEDGE_BASE.units.calc_3500ml,
         dummies: [
-          { id: 'd_35l', name: '35L', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '35L') },
-          { id: 'd_3l50dl', name: '3L 50dL', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '3L 50dL') },
-          { id: 'd_350l', name: '350dL', type: 'unit', draw: (ctx, s) => drawTextIcon(ctx, s, '350dL') }
+          { id: 'd_35l', name: '35L', type: 'unit', origin: '35Lは35,000mLです。', caution: '3500mLは3.5L（3L 5dL）です！', draw: (ctx, s) => drawTextIcon(ctx, s, '35L') },
+          { id: 'd_3l50dl', name: '3L 50dL', type: 'unit', origin: '50dLは5Lなので、合計8Lになってしまいます。', caution: '1L=10dLです！500mLは5dL！', draw: (ctx, s) => drawTextIcon(ctx, s, '3L 50dL') },
+          { id: 'd_350dl', name: '350dL', type: 'unit', origin: '350dLは35Lです。', caution: '3500mLは35dL（3L 5dL）です！', draw: (ctx, s) => drawTextIcon(ctx, s, '350dL') }
         ]
       },
       {
@@ -1712,7 +1963,7 @@
         title: '太古のメガロドン＆クラーケンコア',
         depthTarget: 48,
         question: '「針葉樹林 (スギ・マツ)」の地図記号を探せ！',
-        hint: '尖った葉っぱの木を表す、三角にとがった木だよ',
+        hint: '三角にとがった木の形の球体を探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.conifer,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.factory,
@@ -1732,8 +1983,63 @@
   }
 
   /* ==========================================================================
-     3. Web Audio API サウンドシステム (外部依存ゼロ・シンセ生成)
+     3. 音声読み上げシステム (Web Speech API) & 効果音システム
      ========================================================================== */
+  class SpeechManager {
+    constructor() {
+      this.enabled = true;
+      this.synth = window.speechSynthesis || null;
+      this.voice = null;
+      this.initVoice();
+    }
+
+    initVoice() {
+      if (!this.synth) return;
+      const setVoice = () => {
+        const voices = this.synth.getVoices();
+        // 日本語音声を優先探索 (Google 日本語 / Kyoko / 女性声)
+        this.voice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP')) || null;
+      };
+      setVoice();
+      if (this.synth.onvoiceschanged !== undefined) {
+        this.synth.onvoiceschanged = setVoice;
+      }
+    }
+
+    toggle() {
+      this.enabled = !this.enabled;
+      if (!this.enabled && this.synth) {
+        this.synth.cancel();
+      }
+      return this.enabled;
+    }
+
+    speak(text) {
+      if (!this.enabled || !this.synth) return;
+      this.synth.cancel(); // 前の読み上げを停止
+
+      // 記号や単位のフリガナ補正
+      let spokenText = text
+        .replace(/1m³/g, 'いちりっぽうめーとる')
+        .replace(/1ha/g, 'いちはくたーる')
+        .replace(/10000m²/g, 'いちまんへいほうめーとる')
+        .replace(/1km/g, 'いちきろめーとる')
+        .replace(/1kg/g, 'いちきろぐらむ')
+        .replace(/1L/g, 'いちりっとる')
+        .replace(/10dL/g, 'じゅうでしりっとる')
+        .replace(/3500mL/g, 'さんぜんごひゃくみりりっとる')
+        .replace(/3L 5dL/g, 'さんりっとる ごでしりっとる')
+        .replace(/100cm/g, 'ひゃくせんちめーとる');
+
+      const utter = new SpeechSynthesisUtterance(spokenText);
+      utter.lang = 'ja-JP';
+      utter.rate = 1.0;
+      utter.pitch = 1.1;
+      if (this.voice) utter.voice = this.voice;
+      this.synth.speak(utter);
+    }
+  }
+
   class SoundManager {
     constructor() {
       this.ctx = null;
@@ -1766,7 +2072,6 @@
 
     startAmbient() {
       if (!this.enabled || !this.ctx) return;
-      // 水中の低周波ノイズアンビエント
       const bufferSize = this.ctx.sampleRate * 2;
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
@@ -1790,7 +2095,7 @@
       this.ambientGain.connect(this.ctx.destination);
       whiteNoise.start();
 
-      // エンジン音オシレーター
+      // エンジン音
       this.engineOsc = this.ctx.createOscillator();
       this.engineOsc.type = 'sawtooth';
       this.engineOsc.frequency.setValueAtTime(35, this.ctx.currentTime);
@@ -1814,6 +2119,33 @@
       this.engineGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.1);
       const targetFreq = 35 + speedRatio * 35;
       this.engineOsc.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.1);
+    }
+
+    playDiveSplash() {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime;
+      // スプラッシュ・水しぶきノイズ
+      const bufferSize = this.ctx.sampleRate * 0.8;
+      const b = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) d[i] = Math.random() * 2 - 1;
+
+      const src = this.ctx.createBufferSource();
+      src.buffer = b;
+
+      const f = this.ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.setValueAtTime(900, t);
+      f.frequency.exponentialRampToValueAtTime(120, t + 0.7);
+
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.4, t);
+      g.gain.exponentialRampToValueAtTime(0.01, t + 0.7);
+
+      src.connect(f);
+      f.connect(g);
+      g.connect(this.ctx.destination);
+      src.start(t);
     }
 
     playSonarPing() {
@@ -1919,6 +2251,7 @@
   class SubmarineGame {
     constructor() {
       this.sound = new SoundManager();
+      this.speech = new SpeechManager();
       this.selectedMode = 'normal';
       this.currentStageIdx = 0;
       this.stages = GAME_STAGES[this.selectedMode];
@@ -1932,11 +2265,13 @@
       this.isFirstPerson = false;
       this.canCollectTarget = null;
       this.gameActive = false;
+      this.isDivingTransition = false;
 
       // 記録用
       this.startTime = 0;
       this.missCount = 0;
       this.stealthCount = 0;
+      this.clearedStagesHistory = [];
 
       // 入力状態
       this.keys = {};
@@ -1957,12 +2292,13 @@
       this.targetOrbs = [];
       this.kelpForest = [];
       this.ruinsObjects = [];
-      this.ambientFish = [];
       this.bubbleParticles = null;
 
-      // レーダー用Canvas
+      // レーダー用Canvas & HUDマーカー
       this.radarCanvas = document.getElementById('radar-canvas');
       this.radarCtx = this.radarCanvas.getContext('2d');
+      this.markersContainer = document.getElementById('hud-markers-container');
+      this.hudMarkers = [];
 
       this.initThree();
       this.initInputs();
@@ -1992,7 +2328,7 @@
       });
 
       // ライティング
-      const hemiLight = new THREE.HemisphereLight(0x40a0ff, 0x051025, 0.8);
+      const hemiLight = new THREE.HemisphereLight(0x40a0ff, 0x051025, 0.85);
       this.scene.add(hemiLight);
 
       const dirLight = new THREE.DirectionalLight(0x70c0ff, 1.2);
@@ -2009,14 +2345,12 @@
     }
 
     createAquariumEnvironment() {
-      // 巨大水槽の境界 (140m x 140m x 深さ60m)
       // 海底
       const floorGeo = new THREE.PlaneGeometry(160, 160, 32, 32);
       const floorMat = new THREE.MeshStandardMaterial({
         color: 0x0f2a3a,
         roughness: 0.9,
-        metalness: 0.1,
-        wireframe: false
+        metalness: 0.1
       });
       const floor = new THREE.Mesh(floorGeo, floorMat);
       floor.rotation.x = -Math.PI / 2;
@@ -2036,7 +2370,7 @@
       this.waterSurface.position.y = 0;
       this.scene.add(this.waterSurface);
 
-      // 水槽ガラス壁フレーム
+      // 水槽ガラスフレーム
       const glassWallGeo = new THREE.BoxGeometry(150, 60, 150);
       const edges = new THREE.EdgesGeometry(glassWallGeo);
       const lineMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.15 });
@@ -2067,7 +2401,7 @@
       const hullGeo = new THREE.CylinderGeometry(1.1, 0.9, 4.5, 20);
       hullGeo.rotateX(Math.PI / 2);
       const hullMat = new THREE.MeshStandardMaterial({
-        color: 0xffcc00, // 高視認性イエロー
+        color: 0xffcc00,
         metalness: 0.3,
         roughness: 0.4
       });
@@ -2088,21 +2422,21 @@
       dome.position.z = 2.25;
       this.submarine.add(dome);
 
-      // コニングタワー（上部セイル）
+      // 上部セイル
       const sailGeo = new THREE.BoxGeometry(0.7, 1.0, 1.8);
       const sailMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.2, roughness: 0.5 });
       const sail = new THREE.Mesh(sailGeo, sailMat);
       sail.position.set(0, 1.2, -0.3);
       this.submarine.add(sail);
 
-      // 左右水平舵
+      // 水平舵
       const finGeo = new THREE.BoxGeometry(3.6, 0.1, 0.8);
       const finMat = new THREE.MeshStandardMaterial({ color: 0xff3344 });
       const fin = new THREE.Mesh(finGeo, finMat);
       fin.position.set(0, 0, -1.2);
       this.submarine.add(fin);
 
-      // 後部スクリュープロペラ
+      // 後部スクリュー
       const propGroup = new THREE.Group();
       for (let i = 0; i < 3; i++) {
         const bladeGeo = new THREE.BoxGeometry(0.12, 0.8, 0.2);
@@ -2115,7 +2449,7 @@
       this.submarine.add(propGroup);
       this.subMeshParts.propeller = propGroup;
 
-      // 前面サーチライト (SpotLight + 光線コーンメッシュ)
+      // 前面サーチライト
       const lightLeft = new THREE.SpotLight(0xa0f0ff, 2.5, 45, Math.PI / 5, 0.4, 1.5);
       lightLeft.position.set(-0.8, 0.2, 2.2);
       lightLeft.target.position.set(-0.8, 0.2, 18);
@@ -2128,7 +2462,7 @@
       this.submarine.add(lightRight);
       this.submarine.add(lightRight.target);
 
-      // ビームコーン（可視化）
+      // ビームコーン（可視光線）
       const beamGeo = new THREE.ConeGeometry(4, 25, 16, 1, true);
       beamGeo.rotateX(-Math.PI / 2);
       beamGeo.translate(0, 0, 12.5);
@@ -2143,7 +2477,7 @@
       this.submarine.add(beam);
       this.subMeshParts.beam = beam;
 
-      this.submarine.position.set(0, -2, 0);
+      this.submarine.position.set(0, 0, 0); // 水面待機
       this.scene.add(this.submarine);
     }
 
@@ -2168,7 +2502,7 @@
     }
 
     /* --------------------------------------------------------------------------
-       ステージ生成 (バイオーム・海藻・遺跡・敵・ターゲット)
+       ステージ準備 & 指令書 (MISSION BRIEFING) 提示ステップ
        -------------------------------------------------------------------------- */
     setupStage(stageIdx) {
       this.currentStageIdx = stageIdx;
@@ -2181,10 +2515,10 @@
       document.getElementById('mission-target-text').innerText = stageData.question;
       document.getElementById('mission-target-hint').innerText = stageData.hint;
 
-      // 既存の動的オブジェクトクリア
+      // オブジェクトクリア
       this.clearStageObjects();
 
-      // 水槽フォグ色を深度・バイオームに合わせる
+      // 水槽フォグ色
       if (stageData.biome === 'coral') {
         this.scene.fog.color.setHex(0x0a324a);
       } else if (stageData.biome === 'kelp') {
@@ -2198,45 +2532,97 @@
       }
       this.renderer.setClearColor(this.scene.fog.color);
 
-      // 海藻の森 (Kelp Forest) 生成 (身を隠せるゾーン)
+      // 環境構築
       this.buildKelpForest(stageData.biome);
-
-      // アトランティス遺跡生成 (身を隠せるゾーン)
       this.buildAtlantisRuins(stageData.biome);
-
-      // 敵生物のスポーン (ステージが進むごとに強くなる)
       this.spawnEnemies(stageData);
-
-      // クイズターゲット（正解1個 ＋ ダミー3個）生成
       this.spawnQuizTargets(stageData);
 
-      // 潜水艦をステージ推奨水深近くへスムーズ移動
-      this.submarine.position.set(0, -Math.max(2, stageData.depthTarget - 5), 0);
+      // 潜水艦を水面位置（深度0m）にセット
+      this.submarine.position.set(0, 0, 0);
       this.submarine.rotation.set(0, 0, 0);
+      this.depth = 0;
+      this.speed = 0;
+      this.gameActive = false; // ブリーフィング中待機
+
+      // 【教育的予習】潜航指令書モーダルを開く
+      this.showMissionBriefing(stageData);
+    }
+
+    showMissionBriefing(stageData) {
+      document.getElementById('briefing-stage-name').innerText = `STAGE ${stageData.stage}/5 (${stageData.title})`;
+      document.getElementById('briefing-mission-title').innerText = stageData.question;
+      document.getElementById('briefing-origin-text').innerText = stageData.correct.origin;
+      document.getElementById('briefing-caution-text').innerHTML = `⚠️ <strong>間違えやすいポイント:</strong> ${stageData.correct.caution || 'ダミーの球体としっかり見比べよう！'}`;
+
+      // 3D球体プレビューCanvasに記号を描画
+      const canvas = document.getElementById('briefing-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 140, 140);
+      if (stageData.correct.draw) {
+        stageData.correct.draw(ctx, 140);
+      }
+
+      document.getElementById('modal-briefing').classList.add('open');
+
+      // 音声読み上げ
+      const ttsText = `第${stageData.stage}問。${stageData.question}。${stageData.correct.origin}`;
+      this.speech.speak(ttsText);
+    }
+
+    startDiveFromSurface() {
+      // 指令書を閉じて水面から潜航開始
+      document.getElementById('modal-briefing').classList.remove('open');
+      this.gameActive = true;
+      this.isDivingTransition = true;
+
+      // 水しぶき効果音＆画面エフェクト
+      this.sound.playDiveSplash();
+      const splashOverlay = document.getElementById('dive-splash-overlay');
+      splashOverlay.classList.remove('splash');
+      void splashOverlay.offsetWidth; // リフロー
+      splashOverlay.classList.add('splash');
+
+      // 潜水艦を水面から下方向へスムーズに潜らせる
+      const stageData = this.stages[this.currentStageIdx];
+      const targetY = -Math.max(4, stageData.depthTarget * 0.4);
+
+      let diveProgress = 0;
+      const diveInterval = setInterval(() => {
+        if (!this.submarine || !this.gameActive) {
+          clearInterval(diveInterval);
+          return;
+        }
+        diveProgress += 0.05;
+        this.submarine.position.y += (targetY - this.submarine.position.y) * 0.08;
+        if (diveProgress >= 1.0 || this.submarine.position.y <= targetY + 0.5) {
+          clearInterval(diveInterval);
+          this.isDivingTransition = false;
+        }
+      }, 30);
     }
 
     clearStageObjects() {
-      // 敵削除
       this.enemies.forEach(e => this.scene.remove(e.mesh));
       this.enemies = [];
 
-      // ターゲット削除
       this.targetOrbs.forEach(t => this.scene.remove(t.mesh));
       this.targetOrbs = [];
 
-      // 海藻削除
       this.kelpForest.forEach(k => this.scene.remove(k.group));
       this.kelpForest = [];
 
-      // 遺跡削除
       this.ruinsObjects.forEach(r => this.scene.remove(r.mesh));
       this.ruinsObjects = [];
+
+      // HUDマーカー要素を削除
+      this.markersContainer.innerHTML = '';
+      this.hudMarkers = [];
     }
 
     buildKelpForest(biome) {
-      // ケルプの森クラスター (中心座標と半径)
       const clusterCenters = [
-        { x: -30, z: 20, radius: 15 },
+        { x: -30, z: 20, radius: 16 },
         { x: 28, z: -25, radius: 18 }
       ];
 
@@ -2279,14 +2665,12 @@
     }
 
     buildAtlantisRuins(biome) {
-      // アトランティス神殿エリア (古代の石柱とアーチ門)
       const ruinsCenters = [
         { x: 0, z: -35, radius: 16 },
         { x: -35, z: -20, radius: 14 }
       ];
 
       ruinsCenters.forEach(rc => {
-        // 石柱のサークル
         const colCount = (biome === 'ruins' || biome === 'core') ? 8 : 4;
         for (let i = 0; i < colCount; i++) {
           const colGeo = new THREE.CylinderGeometry(1.2, 1.4, 22, 12);
@@ -2308,7 +2692,6 @@
           });
         }
 
-        // 神殿の上部梁（アーチ）
         const beamGeo = new THREE.BoxGeometry(18, 2, 4);
         const beamMat = new THREE.MeshStandardMaterial({ color: 0x6e8fa8, roughness: 0.5 });
         const beam = new THREE.Mesh(beamGeo, beamMat);
@@ -2319,7 +2702,6 @@
     }
 
     spawnEnemies(stageData) {
-      // ステージに応じた敵の設計
       let count = 2;
       let speed = 4;
       let aggroRange = 22;
@@ -2337,7 +2719,6 @@
         count = 3; speed = 8.5; aggroRange = 38; type = 'megalodon';
       }
 
-      // ハードモードならさらに敵強化
       if (this.selectedMode === 'hard') {
         speed *= 1.25;
         aggroRange *= 1.2;
@@ -2349,25 +2730,21 @@
         let mesh;
 
         if (type === 'puffer') {
-          // メカフグ（トゲトゲ球体）
           const pGeo = new THREE.SphereGeometry(1.4, 12, 12);
           const pMat = new THREE.MeshStandardMaterial({ color: 0xff5533, roughness: 0.4 });
           mesh = new THREE.Mesh(pGeo, pMat);
           eGroup.add(mesh);
         } else if (type === 'hammerhead') {
-          // シュモクザメ
           const bodyGeo = new THREE.ConeGeometry(1.2, 5, 8);
           bodyGeo.rotateX(Math.PI / 2);
           const bodyMat = new THREE.MeshStandardMaterial({ color: 0x446688 });
           mesh = new THREE.Mesh(bodyGeo, bodyMat);
-          // ハンマー頭
           const headGeo = new THREE.BoxGeometry(3.6, 0.6, 0.8);
           const head = new THREE.Mesh(headGeo, bodyMat);
           head.position.z = 2.4;
           eGroup.add(head);
           eGroup.add(mesh);
         } else if (type === 'manta') {
-          // メカ・マンタレイ
           const wingGeo = new THREE.ConeGeometry(3.5, 4, 3);
           wingGeo.rotateX(-Math.PI / 2);
           wingGeo.scale(1.2, 0.2, 1);
@@ -2375,11 +2752,9 @@
           mesh = new THREE.Mesh(wingGeo, wingMat);
           eGroup.add(mesh);
         } else if (type === 'angler') {
-          // 発光アンコウ
           const bodyGeo = new THREE.SphereGeometry(1.8, 10, 10);
           const bodyMat = new THREE.MeshStandardMaterial({ color: 0x331144 });
           mesh = new THREE.Mesh(bodyGeo, bodyMat);
-          // 発光ランタン
           const lightOrb = new THREE.Mesh(
             new THREE.SphereGeometry(0.3, 8, 8),
             new THREE.MeshBasicMaterial({ color: 0x00ffff })
@@ -2388,12 +2763,10 @@
           eGroup.add(lightOrb);
           eGroup.add(mesh);
         } else {
-          // メガロドン（巨大サメ）
           const sharkGeo = new THREE.ConeGeometry(2.5, 9, 10);
           sharkGeo.rotateX(Math.PI / 2);
           const sharkMat = new THREE.MeshStandardMaterial({ color: 0x223344, roughness: 0.5 });
           mesh = new THREE.Mesh(sharkGeo, sharkMat);
-          // 背ビレ
           const finGeo = new THREE.ConeGeometry(1, 2.2, 3);
           const fin = new THREE.Mesh(finGeo, sharkMat);
           fin.position.set(0, 2, 0);
@@ -2401,7 +2774,7 @@
           eGroup.add(mesh);
         }
 
-        // 索敵センサー光コーン（赤/オレンジ）
+        // 索敵光コーン
         const sensorGeo = new THREE.ConeGeometry(3.5, aggroRange * 0.7, 12, 1, true);
         sensorGeo.rotateX(-Math.PI / 2);
         sensorGeo.translate(0, 0, (aggroRange * 0.7) / 2);
@@ -2414,7 +2787,6 @@
         const sensorCone = new THREE.Mesh(sensorGeo, sensorMat);
         eGroup.add(sensorCone);
 
-        // 初期位置（水槽内の適当な分散位置）
         const ang = (i * Math.PI * 2) / count + Math.random();
         const dist = 30 + Math.random() * 25;
         const eX = Math.cos(ang) * dist;
@@ -2432,103 +2804,126 @@
           aggroRange: aggroRange,
           patrolAngle: ang,
           patrolRadius: dist,
-          state: 'patrol', // 'patrol' or 'chase'
+          state: 'patrol',
           sensorMat: sensorMat
         });
       }
     }
 
+    /* --------------------------------------------------------------------------
+       3D球体（オーブ）＆高解像度ホログラム記号のスポーン
+       -------------------------------------------------------------------------- */
     spawnQuizTargets(stageData) {
-      // 正解とダミーをシャッフル
       const items = [
         { data: stageData.correct, isCorrect: true },
         ...stageData.dummies.map(d => ({ data: d, isCorrect: false }))
       ];
 
-      // シャッフル
       for (let i = items.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [items[i], items[j]] = [items[j], items[i]];
       }
 
-      // 各ターゲットの配置位置を計算（潜水艦から見通せる範囲で散開）
+      this.markersContainer.innerHTML = '';
+      this.hudMarkers = [];
+
       items.forEach((item, idx) => {
         const orbGroup = new THREE.Group();
 
-        // 浮遊オーブ外殻（ガラス球）
-        const orbGeo = new THREE.SphereGeometry(2.0, 20, 20);
-        const orbMat = new THREE.MeshPhysicalMaterial({
-          color: item.isCorrect ? 0x00f0ff : 0x88bbdd,
-          transparent: true,
-          opacity: 0.45,
-          roughness: 0.1,
-          transmission: 0.6
+        // 1. メイン発光球体 (テクスチャ直貼り)
+        const orbCanvas = document.createElement('canvas');
+        orbCanvas.width = 512;
+        orbCanvas.height = 512;
+        const orbCtx = orbCanvas.getContext('2d');
+
+        // 背景グラデーション (球体表面用)
+        const bgGrad = orbCtx.createRadialGradient(256, 256, 30, 256, 256, 250);
+        bgGrad.addColorStop(0, item.isCorrect ? 'rgba(0, 240, 255, 0.95)' : 'rgba(80, 160, 220, 0.9)');
+        bgGrad.addColorStop(0.7, item.isCorrect ? 'rgba(0, 100, 200, 0.7)' : 'rgba(30, 80, 140, 0.6)');
+        bgGrad.addColorStop(1, 'rgba(4, 15, 30, 0.95)');
+        orbCtx.fillStyle = bgGrad;
+        orbCtx.fillRect(0, 0, 512, 512);
+
+        // 枠線
+        orbCtx.strokeStyle = item.isCorrect ? '#00f0ff' : '#66aacc';
+        orbCtx.lineWidth = 14;
+        orbCtx.strokeRect(16, 16, 480, 480);
+
+        // 記号または単位を大きく描画
+        if (item.data.draw) {
+          item.data.draw(orbCtx, 512);
+        }
+
+        const orbTexture = new THREE.CanvasTexture(orbCanvas);
+        orbTexture.wrapS = THREE.RepeatWrapping;
+        orbTexture.wrapT = THREE.RepeatWrapping;
+
+        const orbGeo = new THREE.SphereGeometry(2.3, 24, 24);
+        const orbMat = new THREE.MeshStandardMaterial({
+          map: orbTexture,
+          emissive: item.isCorrect ? 0x004466 : 0x002244,
+          emissiveIntensity: 0.5,
+          roughness: 0.2,
+          metalness: 0.1
         });
         const orbSphere = new THREE.Mesh(orbGeo, orbMat);
         orbGroup.add(orbSphere);
 
-        // 外周の回転エネルギーリング
-        const ringGeo = new THREE.TorusGeometry(2.5, 0.08, 8, 24);
+        // 2. 外周の回転エネルギーリング
+        const ringGeo = new THREE.TorusGeometry(3.0, 0.09, 8, 30);
         const ringMat = new THREE.MeshBasicMaterial({
-          color: item.isCorrect ? 0x00ffcc : 0x4488aa,
+          color: item.isCorrect ? 0x00ffff : 0x4488aa,
           transparent: true,
           opacity: 0.8
         });
         const ring = new THREE.Mesh(ringGeo, ringMat);
         orbGroup.add(ring);
 
-        // 中央のシンボル表示用 2D Canvas テクスチャ プレート
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 256;
-        const ctx = canvas.getContext('2d');
-
-        // 背景グロー
-        const grad = ctx.createRadialGradient(128, 128, 20, 128, 128, 120);
-        grad.addColorStop(0, 'rgba(0, 240, 255, 0.4)');
-        grad.addColorStop(1, 'rgba(0, 30, 60, 0.8)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 256, 256);
-
-        // 枠線
-        ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = 6;
-        ctx.strokeRect(10, 10, 236, 236);
-
-        // 記号または単位を描画
-        if (item.data.draw) {
-          item.data.draw(ctx, 256);
-        }
-
-        const texture = new THREE.CanvasTexture(canvas);
-        const planeGeo = new THREE.PlaneGeometry(2.4, 2.4);
+        // 3. 球体内部のビルボードホログラム板 (全角度から正面に見える)
+        const planeGeo = new THREE.PlaneGeometry(3.2, 3.2);
         const planeMat = new THREE.MeshBasicMaterial({
-          map: texture,
+          map: orbTexture,
           transparent: true,
+          opacity: 0.95,
           side: THREE.DoubleSide
         });
-        const planeMesh = new THREE.Mesh(planeGeo, planeMat);
-        orbGroup.add(planeMesh);
+        const billboard = new THREE.Mesh(planeGeo, planeMat);
+        orbGroup.add(billboard);
 
-        // 配置座標（潜水艦から半径20m〜45mの円周上に散布）
-        const ang = (idx * Math.PI * 2) / items.length + (Math.random() - 0.5) * 0.5;
-        const dist = 22 + Math.random() * 20;
+        // 4. 配置座標 (水槽内に散布)
+        const ang = (idx * Math.PI * 2) / items.length + (Math.random() - 0.5) * 0.4;
+        const dist = 24 + Math.random() * 22;
         const tX = Math.cos(ang) * dist;
         const tZ = Math.sin(ang) * dist;
-        const tY = -stageData.depthTarget + (Math.random() - 0.5) * 8;
+        const tY = -stageData.depthTarget + (Math.random() - 0.5) * 7;
 
         orbGroup.position.set(tX, tY, tZ);
         this.scene.add(orbGroup);
 
-        this.targetOrbs.push({
+        // 5. スクリーンHUD追従マーカー要素作成
+        const markerEl = document.createElement('div');
+        markerEl.className = `orb-hud-marker ${item.isCorrect ? 'correct' : ''}`;
+        markerEl.innerHTML = `
+          <div class="bracket-box">
+            <i class="fa-solid fa-crosshairs" style="color:${item.isCorrect ? '#ffd700' : '#00f0ff'}; font-size:16px;"></i>
+          </div>
+          <div class="marker-dist">--m</div>
+        `;
+        this.markersContainer.appendChild(markerEl);
+
+        const targetObj = {
           mesh: orbGroup,
           ring: ring,
-          plane: planeMesh,
+          billboard: billboard,
           data: item.data,
           isCorrect: item.isCorrect,
           baseY: tY,
-          phase: Math.random() * Math.PI * 2
-        });
+          phase: Math.random() * Math.PI * 2,
+          markerEl: markerEl
+        };
+
+        this.targetOrbs.push(targetObj);
+        this.hudMarkers.push(targetObj);
       });
     }
 
@@ -2548,6 +2943,7 @@
         this.updateParticles(time);
         this.updateCamera();
         this.updateHUD();
+        this.updateScreenMarkers();
         this.renderRadar();
       }
 
@@ -2557,7 +2953,6 @@
     updatePlayerMovement(delta) {
       if (!this.submarine) return;
 
-      // 入力取得 (キーボードまたはタッチ操作)
       let forward = 0;
       let yaw = 0;
       let pitch = 0;
@@ -2566,17 +2961,14 @@
       if (this.keys['KeyS'] || this.keys['ArrowDown']) forward -= 1;
       if (this.keys['KeyA'] || this.keys['ArrowLeft']) yaw += 1;
       if (this.keys['KeyD'] || this.keys['ArrowRight']) yaw -= 1;
-      if (this.keys['KeyQ'] || this.touchUp) pitch += 1; // 浮上
-      if (this.keys['KeyE'] || this.touchDown) pitch -= 1; // 潜航
+      if (this.keys['KeyQ'] || this.touchUp) pitch += 1;
+      if (this.keys['KeyE'] || this.touchDown) pitch -= 1;
 
-      // タッチジョイスティック反映
       if (Math.abs(this.touchJoy.y) > 0.1) forward -= this.touchJoy.y;
       if (Math.abs(this.touchJoy.x) > 0.1) yaw -= this.touchJoy.x;
 
-      // 旋回（ヨー角）
       this.submarine.rotation.y += yaw * 1.5 * delta;
 
-      // 前進・後退
       const moveSpeed = 12.0;
       const targetSpeed = forward * moveSpeed;
       this.speed += (targetSpeed - this.speed) * 3.0 * delta;
@@ -2584,32 +2976,24 @@
       const forwardVec = new THREE.Vector3(0, 0, 1).applyQuaternion(this.submarine.quaternion);
       this.submarine.position.addScaledVector(forwardVec, this.speed * delta);
 
-      // 深度変化（ピッチ・昇降）
       const vertSpeed = 7.0;
       this.submarine.position.y += pitch * vertSpeed * delta;
 
-      // 潜水艦のピッチ（傾き）演出
       const targetPitchRot = (pitch * 0.25) - (forward * 0.05);
       this.submarine.rotation.x += (targetPitchRot - this.submarine.rotation.x) * 4.0 * delta;
 
-      // ロール（横傾き）演出
       const targetRoll = -yaw * 0.35;
       this.submarine.rotation.z += (targetRoll - this.submarine.rotation.z) * 4.0 * delta;
 
-      // 水槽の壁面・底面・水面との衝突バウンディング
       this.submarine.position.x = Math.max(-65, Math.min(65, this.submarine.position.x));
       this.submarine.position.z = Math.max(-65, Math.min(65, this.submarine.position.z));
       this.submarine.position.y = Math.max(-52, Math.min(0.5, this.submarine.position.y));
 
-      // スクリュー回転
       if (this.subMeshParts.propeller) {
         this.subMeshParts.propeller.rotation.z += (this.speed * 2.5 + 2.0) * delta;
       }
 
-      // エンジン音連動
       this.sound.setEngineSpeed(Math.abs(this.speed) / moveSpeed);
-
-      // 深度計算 (水面0m〜水底52m)
       this.depth = Math.max(0, -this.submarine.position.y);
     }
 
@@ -2617,10 +3001,8 @@
       if (!this.submarine) return;
       const subPos = this.submarine.position;
 
-      // 海藻または遺跡の隠蔽ゾーン内か判定
       let stealthFound = false;
 
-      // ケルプエリア判定
       for (const k of this.kelpForest) {
         const dx = subPos.x - k.centerX;
         const dz = subPos.z - k.centerZ;
@@ -2630,7 +3012,6 @@
         }
       }
 
-      // 遺跡エリア判定
       if (!stealthFound) {
         for (const r of this.ruinsObjects) {
           const dx = subPos.x - r.centerX;
@@ -2642,14 +3023,12 @@
         }
       }
 
-      // ステルス状態の遷移
       if (stealthFound && !this.isStealth) {
         this.isStealth = true;
         this.stealthCount++;
         this.sound.playStealth();
         document.getElementById('stealth-badge').classList.add('show');
         document.getElementById('stealth-vignette').classList.add('active');
-        // サーチライト減光
         if (this.subMeshParts.beam) this.subMeshParts.beam.material.opacity = 0.04;
       } else if (!stealthFound && this.isStealth) {
         this.isStealth = false;
@@ -2658,7 +3037,6 @@
         if (this.subMeshParts.beam) this.subMeshParts.beam.material.opacity = 0.12;
       }
 
-      // 海藻のゆらゆらアニメーション
       this.kelpForest.forEach(k => {
         k.group.rotation.z = Math.sin(time * 1.5 + k.phase) * 0.08;
         k.group.rotation.x = Math.cos(time * 1.2 + k.phase) * 0.05;
@@ -2672,27 +3050,21 @@
       this.enemies.forEach(e => {
         const dist = e.mesh.position.distanceTo(subPos);
 
-        // 索敵ロジック: ステルス中であれば見つからない！
         if (!this.isStealth && dist < e.aggroRange) {
-          // 自機に向かって追尾
           e.state = 'chase';
           isAnyEnemyAggro = true;
           e.sensorMat.color.setHex(0xff0044);
           e.sensorMat.opacity = 0.25;
 
-          // 潜水艦へ旋回・突進
           const dir = new THREE.Vector3().subVectors(subPos, e.mesh.position).normalize();
           e.mesh.position.addScaledVector(dir, e.speed * delta);
           e.mesh.lookAt(subPos);
 
-          // 衝突判定 (潜水艦に接触)
           if (dist < 3.2) {
             this.takeDamage(18);
-            // ノックバック
             e.mesh.position.addScaledVector(dir, -6);
           }
         } else {
-          // 通常パトロール (円運動)
           e.state = 'patrol';
           e.sensorMat.color.setHex(0xff3355);
           e.sensorMat.opacity = 0.08;
@@ -2711,7 +3083,6 @@
         }
       });
 
-      // 敵アラートHUD表示切替
       const alertEl = document.getElementById('enemy-alert-badge');
       if (isAnyEnemyAggro) {
         alertEl.classList.add('show');
@@ -2725,25 +3096,48 @@
       const subPos = this.submarine.position;
       let nearestTarget = null;
       let minDist = 999;
+      let correctTarget = null;
 
       this.targetOrbs.forEach(t => {
-        // 浮遊アニメーション
+        // 球体とリングの回転アニメーション
         t.mesh.position.y = t.baseY + Math.sin(time * 2 + t.phase) * 0.8;
         t.ring.rotation.x += 0.02;
         t.ring.rotation.y += 0.03;
-        // シンボルプレートは常にカメラに向ける
-        t.plane.lookAt(this.camera.position);
+        t.billboard.lookAt(this.camera.position);
 
         const d = t.mesh.position.distanceTo(subPos);
         if (d < minDist) {
           minDist = d;
           nearestTarget = t;
         }
+        if (t.isCorrect) {
+          correctTarget = t;
+        }
       });
 
-      // 回収可能距離（5.5m以内）
+      // ナビコンパス更新 (正解オーブの方向と距離)
+      if (correctTarget) {
+        const d = correctTarget.mesh.position.distanceTo(subPos);
+        document.getElementById('nav-arrow-dist').innerText = Math.round(d);
+
+        // 自機の前方ベクトルとの角度比較
+        const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.submarine.quaternion);
+        const toTarget = new THREE.Vector3().subVectors(correctTarget.mesh.position, subPos).normalize();
+        const dot = forward.dot(toTarget);
+        const cross = new THREE.Vector3().crossVectors(forward, toTarget);
+
+        let dirText = '前方';
+        if (dot > 0.7) dirText = '前方直進';
+        else if (dot < -0.7) dirText = '後方';
+        else if (cross.y > 0) dirText = '左旋回';
+        else dirText = '右旋回';
+
+        document.getElementById('nav-arrow-dir').innerText = dirText;
+      }
+
+      // 回収可能判定 (5.5m以内)
       const collectBtn = document.getElementById('btn-collect-target');
-      if (minDist < 5.5) {
+      if (minDist < 5.8) {
         this.canCollectTarget = nearestTarget;
         collectBtn.classList.add('capture-ready');
         collectBtn.innerHTML = `<i class="fa-solid fa-crosshairs"></i> ${nearestTarget.data.name} を回収 [F]`;
@@ -2754,14 +3148,40 @@
       }
     }
 
+    updateScreenMarkers() {
+      // 3D座標から2Dスクリーン座標へ投影しHUDマーカーを描画
+      if (!this.camera || !this.submarine) return;
+      const subPos = this.submarine.position;
+      const widthHalf = window.innerWidth / 2;
+      const heightHalf = window.innerHeight / 2;
+
+      this.hudMarkers.forEach(t => {
+        const targetPos = t.mesh.position.clone();
+        const dist = targetPos.distanceTo(subPos);
+
+        // カメラ前方の判定
+        targetPos.project(this.camera);
+
+        const isBehind = targetPos.z > 1.0;
+        if (isBehind || dist > 60) {
+          t.markerEl.style.opacity = '0';
+        } else {
+          t.markerEl.style.opacity = (dist < 40) ? '0.9' : '0.4';
+          const x = (targetPos.x * widthHalf) + widthHalf;
+          const y = -(targetPos.y * heightHalf) + heightHalf;
+          t.markerEl.style.left = `${x}px`;
+          t.markerEl.style.top = `${y}px`;
+          t.markerEl.querySelector('.marker-dist').innerText = `${Math.round(dist)}m`;
+        }
+      });
+    }
+
     updateParticles(time) {
       if (!this.bubbleParticles) return;
       const pos = this.bubbleParticles.geometry.attributes.position.array;
       for (let i = 1; i < pos.length; i += 3) {
-        pos[i] += 0.08; // ゆっくり上昇
-        if (pos[i] > 0) {
-          pos[i] = -55; // 底からリスポーン
-        }
+        pos[i] += 0.08;
+        if (pos[i] > 0) pos[i] = -55;
       }
       this.bubbleParticles.geometry.attributes.position.needsUpdate = true;
     }
@@ -2770,7 +3190,6 @@
       if (!this.submarine) return;
 
       if (this.isFirstPerson) {
-        // コックピット視点
         const domePos = this.submarine.position.clone().add(
           new THREE.Vector3(0, 0.4, 2.2).applyQuaternion(this.submarine.quaternion)
         );
@@ -2780,7 +3199,6 @@
         );
         this.camera.lookAt(lookTarget);
       } else {
-        // サードパーソン追従視点
         const offset = new THREE.Vector3(0, 4.5, -11).applyQuaternion(this.submarine.quaternion);
         const desiredCamPos = this.submarine.position.clone().add(offset);
         this.camera.position.lerp(desiredCamPos, 0.12);
@@ -2793,12 +3211,9 @@
     }
 
     updateHUD() {
-      // 酸素消費 & 水面での回復
       if (this.depth < 1.0) {
-        // 水面浮上中は酸素急速充填！
         this.o2 = Math.min(100, this.o2 + 25 * this.clock.getDelta());
       } else {
-        // 深度に応じた酸素消費 (イージーは遅い)
         const o2Rate = this.selectedMode === 'easy' ? 0.4 : (this.selectedMode === 'normal' ? 0.7 : 1.0);
         this.o2 = Math.max(0, this.o2 - o2Rate * this.clock.getDelta());
       }
@@ -2807,7 +3222,6 @@
         this.gameOver('酸素がなくなってしまいました！');
       }
 
-      // UI反映
       document.getElementById('o2-bar').style.width = `${this.o2}%`;
       document.getElementById('o2-val-text').innerText = `${Math.round(this.o2)}%`;
 
@@ -2827,7 +3241,6 @@
       this.shield = Math.max(0, this.shield - amount);
       this.sound.playHit();
 
-      // ダメージフラッシュ
       const flash = document.getElementById('damage-flash');
       flash.classList.add('flash');
       setTimeout(() => flash.classList.remove('flash'), 250);
@@ -2842,11 +3255,10 @@
       const w = this.radarCanvas.width;
       const h = this.radarCanvas.height;
       const center = w / 2;
-      const scale = w / 140; // 140m水槽をレーダーにマッピング
+      const scale = w / 140;
 
       ctx.clearRect(0, 0, w, h);
 
-      // レーダー同心円
       ctx.strokeStyle = 'rgba(0, 240, 255, 0.25)';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -2858,17 +3270,17 @@
       const subX = this.submarine.position.x;
       const subZ = this.submarine.position.z;
 
-      // ターゲット（オーブ）表示 (黄色/シアン)
+      // ターゲット（オーブ）表示
       this.targetOrbs.forEach(t => {
         const rx = center + (t.mesh.position.x - subX) * scale;
         const rz = center + (t.mesh.position.z - subZ) * scale;
-        ctx.fillStyle = '#ffd700';
+        ctx.fillStyle = t.isCorrect ? '#ffd700' : '#00f0ff';
         ctx.beginPath();
-        ctx.arc(rx, rz, 3.5, 0, Math.PI * 2);
+        ctx.arc(rx, rz, t.isCorrect ? 4.5 : 3, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // 敵表示 (赤)
+      // 敵表示
       this.enemies.forEach(e => {
         const rx = center + (e.mesh.position.x - subX) * scale;
         const rz = center + (e.mesh.position.z - subZ) * scale;
@@ -2878,7 +3290,7 @@
         ctx.fill();
       });
 
-      // 自機（緑の三角）
+      // 自機
       ctx.save();
       ctx.translate(center, center);
       ctx.rotate(-this.submarine.rotation.y);
@@ -2893,65 +3305,81 @@
     }
 
     /* --------------------------------------------------------------------------
-       クイズ回収判定 & モーダル演出
+       ターゲット回収判定 & 教育的フィードバック（正解 / 比較モーダル）
        -------------------------------------------------------------------------- */
     collectCurrentTarget() {
       if (!this.canCollectTarget) return;
 
       const target = this.canCollectTarget;
+      const stageData = this.stages[this.currentStageIdx];
+
       if (target.isCorrect) {
         // 正解！
         this.gameActive = false;
         this.sound.playCorrect();
+        this.clearedStagesHistory.push(target.data);
         this.showExplanationModal(target.data);
       } else {
-        // 不正解（ダミー）
+        // 不正解（ダミー）：2つの記号を並べて比較学習
         this.missCount++;
         this.sound.playWrong();
         this.takeDamage(12);
-        this.showWrongModal(target.data);
+        this.showWrongComparisonModal(target.data, stageData.correct);
       }
     }
 
     showExplanationModal(data) {
       document.getElementById('modal-exp-title').innerText = `「${data.name}」`;
       document.getElementById('modal-exp-body').innerHTML = `
-        <strong>【小学校の学び・解説】</strong><br>${data.origin}
+        <strong>【小学校の学び・由来】</strong><br>${data.origin}<br><br>
+        <strong>【覚えるコツ】</strong><br>${data.caution || 'よく目にする形と意味をセットで覚えよう！'}
       `;
 
-      // アイコン描画
       const canvas = document.getElementById('exp-icon-canvas');
       const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, 100, 100);
-      if (data.draw) data.draw(ctx, 100);
+      ctx.clearRect(0, 0, 110, 110);
+      if (data.draw) data.draw(ctx, 110);
 
       document.getElementById('modal-explanation').classList.add('open');
+
+      // 音声読み上げ
+      this.speech.speak(`正解！${data.name}。${data.origin}`);
     }
 
-    showWrongModal(data) {
-      document.getElementById('modal-wrong-title').innerText = `「${data.name}」`;
+    showWrongComparisonModal(wrongData, correctData) {
+      document.getElementById('wrong-symbol-name').innerText = wrongData.name;
+      document.getElementById('correct-symbol-name').innerText = correctData.name;
+
+      // 間違えたもの
+      const wCanvas = document.getElementById('wrong-compare-canvas');
+      const wCtx = wCanvas.getContext('2d');
+      wCtx.clearRect(0, 0, 80, 80);
+      if (wrongData.draw) wrongData.draw(wCtx, 80);
+
+      // 正解のもの
+      const cCanvas = document.getElementById('correct-compare-canvas');
+      const cCtx = cCanvas.getContext('2d');
+      cCtx.clearRect(0, 0, 80, 80);
+      if (correctData.draw) correctData.draw(cCtx, 80);
+
       document.getElementById('modal-wrong-body').innerHTML = `
-        これは<strong>「${data.name}」</strong>だよ！<br>
-        ${data.origin || '探しているターゲットとは形が違うぞ。'}<br>
-        シールドに少しダメージを受けた！周りの海藻などに身を隠しつつ本物を探そう！
+        あなたが選んだのは<strong>「${wrongData.name}」</strong>だよ！<br>
+        ${wrongData.origin || ''}<br><br>
+        探すべき本物は<strong>「${correctData.name}」</strong>だ！<br>
+        ${correctData.caution || '形の違いをよく確認して、もう一度海中を探そう！'}
       `;
 
-      // アイコン描画
-      const canvas = document.getElementById('wrong-icon-canvas');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, 100, 100);
-      if (data.draw) data.draw(ctx, 100);
-
       document.getElementById('modal-wrong').classList.add('open');
+
+      // 音声読み上げ
+      this.speech.speak(`惜しい！それは${wrongData.name}です。探している本物は${correctData.name}だよ。形の違いを比べてみよう！`);
     }
 
     nextStage() {
       document.getElementById('modal-explanation').classList.remove('open');
       if (this.currentStageIdx + 1 < this.stages.length) {
         this.setupStage(this.currentStageIdx + 1);
-        this.gameActive = true;
       } else {
-        // 全5問完全クリア！
         this.showGameClear();
       }
     }
@@ -2966,7 +3394,6 @@
       document.getElementById('res-miss-text').innerText = `${this.missCount}回`;
       document.getElementById('res-stealth-text').innerText = `${this.stealthCount}回`;
 
-      // ランク判定
       let rank = 'S';
       let title = '🏅 特級・深海マスター潜航士';
       if (this.missCount === 0 && this.shield > 80) {
@@ -2982,13 +3409,39 @@
 
       document.getElementById('res-rank-text').innerText = `RANK ${rank}`;
       document.getElementById('res-title-text').innerText = title;
+
+      // 今回の学習ノート（5問分）を一覧生成
+      const notesList = document.getElementById('study-notes-list');
+      notesList.innerHTML = '';
+      this.clearedStagesHistory.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'study-note-item';
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 96;
+        canvas.height = 96;
+        const ctx = canvas.getContext('2d');
+        if (item.draw) item.draw(ctx, 96);
+
+        row.appendChild(canvas);
+        row.innerHTML += `
+          <div class="study-note-info">
+            <strong>第${idx + 1}問: ${item.name}</strong><br>
+            ${item.origin}
+          </div>
+        `;
+        notesList.appendChild(row);
+      });
+
       document.getElementById('modal-clear').classList.add('open');
+      this.speech.speak(`おめでとうございます！全5問完全制覇！ランクは${rank}です！`);
     }
 
     gameOver(reason) {
       this.gameActive = false;
       document.getElementById('gameover-reason-text').innerText = reason;
       document.getElementById('modal-gameover').classList.add('open');
+      this.speech.speak(`緊急浮上！${reason}`);
     }
 
     restartCurrentStage() {
@@ -2996,7 +3449,6 @@
       this.o2 = 100;
       this.shield = 100;
       this.setupStage(this.currentStageIdx);
-      this.gameActive = true;
     }
 
     startNewGame(mode) {
@@ -3007,18 +3459,18 @@
       this.shield = 100;
       this.missCount = 0;
       this.stealthCount = 0;
+      this.clearedStagesHistory = [];
       this.startTime = Date.now();
 
       this.sound.init();
       this.setupStage(0);
-      this.gameActive = true;
 
       document.getElementById('modal-start').classList.remove('open');
       document.getElementById('modal-clear').classList.remove('open');
     }
 
     /* --------------------------------------------------------------------------
-       入力・UI イベント設定
+       入力 & UI イベント設定
        -------------------------------------------------------------------------- */
     initInputs() {
       window.addEventListener('keydown', (e) => {
@@ -3098,6 +3550,29 @@
         this.startNewGame(this.selectedMode);
       });
 
+      // 指令書から潜航開始ボタン (DIVE!)
+      document.getElementById('btn-start-dive').addEventListener('click', () => {
+        this.startDiveFromSurface();
+      });
+
+      // 指令書 音声読み上げボタン
+      document.getElementById('btn-briefing-tts').addEventListener('click', () => {
+        const stageData = this.stages[this.currentStageIdx];
+        this.speech.speak(`第${stageData.stage}問。${stageData.question}。${stageData.correct.origin}`);
+      });
+
+      // HUD音声読み上げボタン
+      document.getElementById('btn-hud-tts').addEventListener('click', () => {
+        const stageData = this.stages[this.currentStageIdx];
+        this.speech.speak(stageData.question);
+      });
+
+      // 解説モーダル 音声読み上げボタン
+      document.getElementById('btn-exp-tts').addEventListener('click', () => {
+        const stageData = this.stages[this.currentStageIdx];
+        this.speech.speak(`正解！${stageData.correct.name}。${stageData.correct.origin}`);
+      });
+
       // 次ステージボタン
       document.getElementById('btn-next-stage').addEventListener('click', () => {
         this.nextStage();
@@ -3128,6 +3603,13 @@
       // カメラ視点切り替え
       document.getElementById('btn-cam-view').addEventListener('click', () => {
         this.toggleCamera();
+      });
+
+      // 音声読み上げ切り替え (TTS)
+      const ttsBtn = document.getElementById('btn-tts-toggle');
+      ttsBtn.addEventListener('click', () => {
+        const on = this.speech.toggle();
+        ttsBtn.innerHTML = on ? '<i class="fa-solid fa-comment-dots"></i>' : '<i class="fa-solid fa-comment-slash"></i>';
       });
 
       // サウンドON/OFF
@@ -3180,8 +3662,6 @@
 
     triggerSonarPulse() {
       this.sound.playSonarPing();
-
-      // ソナー波で全ターゲット・敵を一時的にハイライト
       this.targetOrbs.forEach(t => {
         t.ring.scale.set(1.6, 1.6, 1.6);
         setTimeout(() => t.ring.scale.set(1, 1, 1), 1200);
