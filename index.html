@@ -24,7 +24,7 @@
       --accent-gold: #ffd700;
       --accent-green: #00ff88;
       --danger-red: #ff3366;
-      --panel-bg: rgba(6, 20, 38, 0.84);
+      --panel-bg: rgba(6, 20, 38, 0.86);
       --panel-border: rgba(0, 240, 255, 0.4);
       --font-main: 'Zen Maru Gothic', sans-serif;
       --font-hud: 'Orbitron', monospace;
@@ -133,7 +133,7 @@
       opacity: 1;
     }
 
-    /* 3D追従HUDマーカーレイヤー（正解もダミーも同じシアン枠で統一！） */
+    /* 3D追従HUDマーカーレイヤー（全球体完全同色） */
     #hud-markers-container {
       position: absolute;
       top: 0;
@@ -989,7 +989,6 @@
 
   <!-- HUD オーバーレイ -->
   <div id="hud-layer">
-    <!-- 上部: ステータス、ミッション、レーダー -->
     <div class="hud-header">
       <!-- 潜水艦ステータス -->
       <div class="ship-status-panel">
@@ -1135,7 +1134,7 @@
       </div>
 
       <div style="font-size: 12px; color: #8ec3eb; line-height: 1.6;">
-        💡 <strong>探査の掟</strong>: 球体の色は正解もダミーもすべて同じ！球体に近づいて描かれた記号をしっかり自分の目で確かめよう！
+        💡 <strong>探査の掟</strong>: 毎回ランダムに問題が出題されます！球体に近づいて記号を自分の目でしっかり確かめよう！
       </div>
     </div>
   </div>
@@ -1154,7 +1153,7 @@
           <i class="fa-solid fa-bullseye"></i> 今回のターゲットミッション
         </div>
         <div id="briefing-mission-prompt" style="font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 10px;">
-          「学校」を表す正しい地図記号を見つけ出そう！
+          正しい地図記号を見つけ出そう！
         </div>
         <div><strong>【探査の心得・ヒント】</strong></div>
         <div id="briefing-mission-hint">水中の球体には様々な記号が浮かんでいるぞ。よく似たダミーに惑わされず、本物を探し出そう！</div>
@@ -1179,7 +1178,6 @@
       </div>
       <h2 class="modal-title" id="modal-exp-title" style="color: #fff;">「学校」の地図記号</h2>
       
-      <!-- 正解記号の超鮮明プレビュー -->
       <div class="explanation-orb-preview">
         <canvas id="exp-icon-canvas" width="140" height="140"></canvas>
       </div>
@@ -1261,7 +1259,7 @@
 
       <div style="margin-top: 15px;">
         <button class="primary-btn" id="btn-replay">
-          もう一度挑戦する <i class="fa-solid fa-arrow-rotate-left"></i>
+          もう一度挑戦する (ランダム再出題) <i class="fa-solid fa-arrow-rotate-left"></i>
         </button>
         <button class="secondary-btn" id="btn-clear-open-guide">
           大図鑑でさらに復習
@@ -1291,13 +1289,13 @@
   <div class="modal-overlay" id="modal-encyclopedia">
     <div class="modal-card encyclopedia-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h2 class="modal-title" style="margin: 0; font-size: 20px;">📖 小学校 地図記号＆単位 大図鑑</h2>
+        <h2 class="modal-title" style="margin: 0; font-size: 20px;">📖 小学校 地図記号＆単位 大図鑑 (全50種)</h2>
         <button class="hud-btn" id="btn-close-encyclopedia"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="tab-bar">
-        <button class="tab-btn active" id="tab-btn-map">🗺️ 地図記号 (社会科)</button>
-        <button class="tab-btn" id="tab-btn-units">📏 算数の単位 (算数科)</button>
+        <button class="tab-btn active" id="tab-btn-map">🗺️ 地図記号 (全30種)</button>
+        <button class="tab-btn" id="tab-btn-units">📏 算数の単位 (全20種)</button>
       </div>
 
       <div class="encyclopedia-scroll-area" id="enc-content-grid">
@@ -1309,458 +1307,14 @@
   <!-- ゲームプログラムメインスクリプト -->
   <script>
   /* ==========================================================================
-     1. 超高解像度・極太線画・高コントラスト 記号＆単位マスターデータ
+     1. 超高解像度・極太線画・高コントラスト 記号＆単位マスターデータ (全50種類)
      ========================================================================== */
-  const KNOWLEDGE_BASE = {
-    // 地図記号 (社会科)
-    mapSymbols: {
-      school: {
-        id: 'school',
-        name: '学校 (小・中学校)',
-        type: 'map',
-        draw: (ctx, s) => {
-          // 背景サークル
-          drawBaseCircle(ctx, s);
-          // 極太 文
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${s * 0.72}px "Zen Maru Gothic", sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('文', s / 2, s / 2);
-        },
-        origin: '「文字」の「文」という漢字をそのまま図案化したもの。小学校と中学校を表します。高校は「文」の周りに丸◯がつきます。',
-        caution: '高校の記号(◯の中に文)と間違えないようにしましょう！'
-      },
-      police: {
-        id: 'police',
-        name: '警察署',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 極太交差警棒 ✕
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.20;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.moveTo(s * 0.24, s * 0.24);
-          ctx.lineTo(s * 0.76, s * 0.76);
-          ctx.moveTo(s * 0.76, s * 0.24);
-          ctx.lineTo(s * 0.24, s * 0.76);
-          ctx.stroke();
-        },
-        origin: '警察官が昔持っていた「交差させた警棒（けいぼう）」の形から作られました。',
-        caution: '交番(⊗)は丸で囲まれていますが、警察署(✕)は丸がありません！'
-      },
-      koban: {
-        id: 'koban',
-        name: '交番',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 丸の中に✕
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.14;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.35, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(s * 0.26, s * 0.26);
-          ctx.lineTo(s * 0.74, s * 0.74);
-          ctx.moveTo(s * 0.74, s * 0.26);
-          ctx.lineTo(s * 0.26, s * 0.74);
-          ctx.stroke();
-        },
-        origin: '警察署の記号(✕)のまわりを丸◯で囲った形。街の身近な交番を表します。',
-        caution: '丸の中に✕があるのが交番です。警察署との違いをしっかり見分けよう！'
-      },
-      post: {
-        id: 'post',
-        name: '郵便局',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 極太 〒
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.16;
-          ctx.lineCap = 'square';
-          ctx.beginPath();
-          ctx.moveTo(s * 0.18, s * 0.28);
-          ctx.lineTo(s * 0.82, s * 0.28);
-          ctx.moveTo(s * 0.18, s * 0.46);
-          ctx.lineTo(s * 0.82, s * 0.46);
-          ctx.moveTo(s / 2, s * 0.28);
-          ctx.lineTo(s / 2, s * 0.80);
-          ctx.stroke();
-        },
-        origin: '昔の郵便をつかさどっていた「逓信省（ていしんしょう）」の「テ」を図案化したマーク(〒)です。',
-        caution: '手紙やハガキを出すポストのマークとしても身近ですね！'
-      },
-      fire: {
-        id: 'fire',
-        name: '消防署',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 極太 さすまた (Y字)
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.18;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.moveTo(s / 2, s * 0.82);
-          ctx.lineTo(s / 2, s * 0.48);
-          ctx.lineTo(s * 0.22, s * 0.22);
-          ctx.moveTo(s / 2, s * 0.48);
-          ctx.lineTo(s * 0.78, s * 0.22);
-          ctx.stroke();
-        },
-        origin: '昔の江戸の火消しが、火事を消すときに屋根を壊すために使った道具「さすまた」の形から作られました。',
-        caution: 'Y字型のさすまたです。警察署(✕)や工場(歯車)と間違えないように！'
-      },
-      hospital: {
-        id: 'hospital',
-        name: '病院',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 四角い盾＋十字
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.12;
-          ctx.strokeRect(s * 0.18, s * 0.18, s * 0.64, s * 0.64);
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(s * 0.41, s * 0.25, s * 0.18, s * 0.50);
-          ctx.fillRect(s * 0.25, s * 0.41, s * 0.50, s * 0.18);
-        },
-        origin: '赤十字のマークを四角い囲みで守った形。お医者さんが何人もいる大きな総合病院などを表します。',
-        caution: '四角い枠の中に十字があります。個人の診療所ではなく大きな病院です。'
-      },
-      cityhall: {
-        id: 'cityhall',
-        name: '市役所・区役所',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 二重丸 ◎
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.14;
-          ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.18, 0, Math.PI * 2);
-          ctx.stroke();
-        },
-        origin: '市の中心であることを表す「二重丸◎」。',
-        caution: '町村役場は丸の中に黒点（⊙）です。二重丸◎が市役所・区役所！'
-      },
-      townhall: {
-        id: 'townhall',
-        name: '町村役場',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 丸に黒点 ⊙
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.14;
-          ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.16, 0, Math.PI * 2);
-          ctx.fill();
-        },
-        origin: '円の中に小さな丸（黒点）を置いた形。町や村の役場を表します。',
-        caution: '中心が塗りつぶされているのが町村役場(⊙)です。'
-      },
-      jinja: {
-        id: 'jinja',
-        name: '神社',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 鳥居 ⛩
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.13;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.moveTo(s * 0.16, s * 0.26);
-          ctx.lineTo(s * 0.84, s * 0.26);
-          ctx.moveTo(s * 0.22, s * 0.38);
-          ctx.lineTo(s * 0.78, s * 0.38);
-          ctx.moveTo(s * 0.32, s * 0.26);
-          ctx.lineTo(s * 0.32, s * 0.82);
-          ctx.moveTo(s * 0.68, s * 0.26);
-          ctx.lineTo(s * 0.68, s * 0.82);
-          ctx.stroke();
-        },
-        origin: '神社への入り口にある「鳥居（とりい）」の形そのものをシンプルに描いています。',
-        caution: 'お寺（卍）と混同しないように！鳥居が神社です。'
-      },
-      temple: {
-        id: 'temple',
-        name: '寺院 (お寺)',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 卍
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.16;
-          ctx.lineCap = 'square';
-          const h = s / 2;
-          ctx.beginPath();
-          ctx.moveTo(s * 0.22, s * 0.28); ctx.lineTo(h, s * 0.28); ctx.lineTo(h, s * 0.72); ctx.lineTo(s * 0.78, s * 0.72);
-          ctx.moveTo(s * 0.72, s * 0.22); ctx.lineTo(s * 0.72, h); ctx.lineTo(s * 0.28, h); ctx.lineTo(s * 0.28, s * 0.78);
-          ctx.stroke();
-        },
-        origin: '仏教で幸運や徳をあらわす神聖な記号「卍（まんじ）」から作られました。',
-        caution: '鳥居は神社、卍はお寺です。書き順や向きに注意しよう！'
-      },
-      factory: {
-        id: 'factory',
-        name: '工場',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 歯車 ⚙
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.12;
-          ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.20, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.lineWidth = s * 0.14;
-          for (let i = 0; i < 8; i++) {
-            const ang = (i * Math.PI) / 4;
-            const x1 = s / 2 + Math.cos(ang) * (s * 0.20);
-            const y1 = s / 2 + Math.sin(ang) * (s * 0.20);
-            const x2 = s / 2 + Math.cos(ang) * (s * 0.40);
-            const y2 = s / 2 + Math.sin(ang) * (s * 0.40);
-            ctx.beginPath();
-            ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-            ctx.stroke();
-          }
-        },
-        origin: '機械を動かす「歯車（はぐるま）」の形から作られました。',
-        caution: '風車（三枚羽根）や発電所（歯車＋電気）と見分けよう！'
-      },
-      onsen: {
-        id: 'onsen',
-        name: '温泉',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 温泉 ♨
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.12;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.ellipse(s / 2, s * 0.72, s * 0.34, s * 0.09, 0, 0, Math.PI * 2);
-          ctx.stroke();
-          // 3本の湯気
-          ctx.beginPath();
-          ctx.moveTo(s * 0.33, s * 0.58); ctx.quadraticCurveTo(s * 0.26, s * 0.44, s * 0.33, s * 0.30);
-          ctx.moveTo(s / 2, s * 0.58); ctx.quadraticCurveTo(s * 0.42, s * 0.38, s * 0.50, s * 0.18);
-          ctx.moveTo(s * 0.67, s * 0.58); ctx.quadraticCurveTo(s * 0.60, s * 0.44, s * 0.67, s * 0.30);
-          ctx.stroke();
-        },
-        origin: '温泉の湯船から、ふわふわと湯気（ゆげ）が立ち上っている様子を描いた記号です。',
-        caution: '3本の湯気の長さ（真ん中が一番長い）も特徴です！'
-      },
-      nursing: {
-        id: 'nursing',
-        name: '老人ホーム',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 家の中に杖
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.12;
-          ctx.lineJoin = 'round';
-          ctx.beginPath();
-          ctx.moveTo(s / 2, s * 0.16);
-          ctx.lineTo(s * 0.16, s * 0.44);
-          ctx.lineTo(s * 0.24, s * 0.44);
-          ctx.lineTo(s * 0.24, s * 0.80);
-          ctx.lineTo(s * 0.76, s * 0.80);
-          ctx.lineTo(s * 0.76, s * 0.44);
-          ctx.lineTo(s * 0.84, s * 0.44);
-          ctx.closePath();
-          ctx.stroke();
-          // 杖
-          ctx.lineWidth = s * 0.11;
-          ctx.beginPath();
-          ctx.arc(s * 0.45, s * 0.52, s * 0.10, Math.PI, 0);
-          ctx.lineTo(s * 0.55, s * 0.72);
-          ctx.stroke();
-        },
-        origin: '住まいの「建物」の中に、お年寄りが使う「杖（つえ）」を組み合わせた平成生まれの新しい記号です。',
-        caution: '建物の中に杖があるのが目印！病院(十字)としっかり区別しよう！'
-      },
-      conifer: {
-        id: 'conifer',
-        name: '針葉樹林 (スギ・マツ)',
-        type: 'map',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          // 尖った木 ▲
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.14;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.moveTo(s / 2, s * 0.18);
-          ctx.lineTo(s * 0.22, s * 0.68);
-          ctx.moveTo(s / 2, s * 0.18);
-          ctx.lineTo(s * 0.78, s * 0.68);
-          ctx.moveTo(s / 2, s * 0.18);
-          ctx.lineTo(s / 2, s * 0.82);
-          ctx.stroke();
-        },
-        origin: 'スギやマツなどの尖った葉っぱの木（針葉樹）の形から作られました。三角形にとがっています。',
-        caution: '丸い形の広葉樹林と見分けよう！三角に尖っているのが針葉樹林です。'
-      }
-    },
-
-    // 算数の単位 (算数科)
-    units: {
-      m_to_cm: {
-        id: 'm_to_cm',
-        name: '1m = 100cm',
-        type: 'unit',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${s * 0.32}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('100cm', s / 2, s * 0.44);
-          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
-          ctx.fillStyle = '#66eeff';
-          ctx.fillText('(= 1m)', s / 2, s * 0.74);
-        },
-        origin: '【長さ】1m（メートル）は100cm（センチメートル）。「c（センチ）」は「100分の1」を表します。',
-        caution: '10cmや1000cmと間違えないように！定規の1mは100cmです。'
-      },
-      km_to_m: {
-        id: 'km_to_m',
-        name: '1km = 1000m',
-        type: 'unit',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('1000m', s / 2, s * 0.44);
-          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
-          ctx.fillStyle = '#66eeff';
-          ctx.fillText('(= 1km)', s / 2, s * 0.74);
-        },
-        origin: '【長さ】1km（キロメートル）は1000m。「k（キロ）」は「1000倍」という意味があるよ！',
-        caution: 'キロがついたら1000倍！1kmは1000mです。'
-      },
-      kg_to_g: {
-        id: 'kg_to_g',
-        name: '1kg = 1000g',
-        type: 'unit',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('1000g', s / 2, s * 0.44);
-          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
-          ctx.fillStyle = '#66eeff';
-          ctx.fillText('(= 1kg)', s / 2, s * 0.74);
-        },
-        origin: '【重さ】1kg（キログラム）は1000g（グラム）。これも「k（キロ）」だから1000倍！',
-        caution: '100gと勘違いしやすいので注意！1kgは1000gです。'
-      },
-      l_to_dl: {
-        id: 'l_to_dl',
-        name: '1L = 10dL',
-        type: 'unit',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${s * 0.34}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('10dL', s / 2, s * 0.44);
-          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
-          ctx.fillStyle = '#66eeff';
-          ctx.fillText('(= 1L)', s / 2, s * 0.74);
-        },
-        origin: '【かさ・体積】1L（リットル）は10dL（デシリットル）。「d（デシ）」は「10分の1」を表すよ。',
-        caution: '100dLではなく「10dL」です！牛乳パック1Lは10dL！'
-      },
-      ha_to_m2: {
-        id: 'ha_to_m2',
-        name: '1ha = 10000m²',
-        type: 'unit',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${s * 0.25}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('10000m²', s / 2, s * 0.44);
-          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
-          ctx.fillStyle = '#66eeff';
-          ctx.fillText('(= 1ha)', s / 2, s * 0.74);
-        },
-        origin: '【面積】1辺が100mの正方形の面積が1ha（ヘクタール）= 10000m²。1haは100a（アール）でもあるよ！',
-        caution: '100m × 100m = 10,000m² です。0の数（4個）をしっかり数えよう！'
-      },
-      m3_to_l: {
-        id: 'm3_to_l',
-        name: '1m³ = 1000L',
-        type: 'unit',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('1000L', s / 2, s * 0.44);
-          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
-          ctx.fillStyle = '#66eeff';
-          ctx.fillText('(= 1m³)', s / 2, s * 0.74);
-        },
-        origin: '【体積】1辺が1mの立方体の体積が1m³。水を入れるとぴったり1000L（100万cm³）入るよ！',
-        caution: '100Lではなく「1000L」です。お風呂約5杯分に相当します！'
-      },
-      calc_3500ml: {
-        id: 'calc_3500ml',
-        name: '3500mL = 3L 5dL',
-        type: 'unit',
-        draw: (ctx, s) => {
-          drawBaseCircle(ctx, s);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${s * 0.26}px Orbitron, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('3L 5dL', s / 2, s * 0.44);
-          ctx.font = `900 ${s * 0.20}px "Zen Maru Gothic", sans-serif`;
-          ctx.fillStyle = '#66eeff';
-          ctx.fillText('(= 3500mL)', s / 2, s * 0.74);
-        },
-        origin: '【単位の計算】1000mL=1L、100mL=1dLなので、3500mLは「3L 5dL」または「3.5L」になるよ！',
-        caution: '35Lや3L 50dLと間違えやすいので位取りに注目しよう！'
-      }
-    }
-  };
-
-  // すべてのアイコンに共通の高コントラスト背景サークル（視認性を極限まで高める）
   function drawBaseCircle(ctx, s) {
     ctx.clearRect(0, 0, s, s);
-    // 濃紺プレート
     ctx.fillStyle = '#05182d';
     ctx.beginPath();
     ctx.arc(s / 2, s / 2, s * 0.47, 0, Math.PI * 2);
     ctx.fill();
-
-    // ネオンシアン外枠
     ctx.strokeStyle = '#00f0ff';
     ctx.lineWidth = s * 0.06;
     ctx.stroke();
@@ -1775,244 +1329,811 @@
     ctx.fillText(text, s / 2, s / 2);
   }
 
-  /* ==========================================================================
-     2. 難易度別 5ステージ ミッションデータ
-     ========================================================================== */
-  const GAME_STAGES = {
-    easy: [
-      {
-        stage: 1,
-        biome: 'coral',
-        title: '浅瀬のサンゴ礁',
-        depthTarget: 8,
-        question: '「学校 (小・中学校)」の地図記号を探せ！',
-        missionPrompt: '小学校や中学校を表す地図記号を見つけ出そう！',
-        missionHint: 'ノートや勉強でおなじみの漢字がモチーフになっているぞ。水中の球体をよく見て探そう！',
-        correct: KNOWLEDGE_BASE.mapSymbols.school,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.police,
-          KNOWLEDGE_BASE.mapSymbols.post,
-          KNOWLEDGE_BASE.mapSymbols.hospital
-        ]
+  const KNOWLEDGE_BASE = {
+    // 地図記号 (全30種類)
+    mapSymbols: {
+      school: {
+        id: 'school', name: '学校 (小・中学校)', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `900 ${s * 0.72}px "Zen Maru Gothic", sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('文', s / 2, s / 2);
+        },
+        origin: '「文字」の「文」という漢字をそのまま図案化したもの。小学校と中学校を表します。高校は「文」の周りに丸◯がつきます。',
+        caution: '高校の記号(◯の中に文)と間違えないようにしましょう！'
       },
-      {
-        stage: 2,
-        biome: 'kelp',
-        title: '巨木のケルプ海藻林',
-        depthTarget: 16,
-        question: '「1メートル (1m)」と同じ長さを探せ！',
-        missionPrompt: '「1m」を「cm」に直した正しい単位の球体を探し出そう！',
-        missionHint: '竹ものさしやメジャーを思い出そう。1mは何cmかな？',
-        correct: KNOWLEDGE_BASE.units.m_to_cm,
-        dummies: [
-          { id: 'd_10cm', name: '10cm', type: 'unit', origin: '10cmは1mの10分の1です。', caution: '1mは100cmですよ！', draw: (ctx, s) => drawTextIcon(ctx, s, '10cm') },
-          { id: 'd_1000cm', name: '1000cm', type: 'unit', origin: '1000cmは10mです。', caution: '0が多すぎます！1mは100cmです。', draw: (ctx, s) => drawTextIcon(ctx, s, '1000cm') },
-          { id: 'd_100m', name: '100m', type: 'unit', origin: '100mはプールの4倍の長さです。', caution: '100mではなく100cmです！', draw: (ctx, s) => drawTextIcon(ctx, s, '100m') }
-        ]
+      koban: {
+        id: 'koban', name: '交番', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.35, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(s * 0.26, s * 0.26); ctx.lineTo(s * 0.74, s * 0.74);
+          ctx.moveTo(s * 0.74, s * 0.26); ctx.lineTo(s * 0.26, s * 0.74); ctx.stroke();
+        },
+        origin: '警察署の記号(✕)のまわりを丸◯で囲った形。街の身近な交番を表します。',
+        caution: '丸の中に✕があるのが交番です。警察署との違いをしっかり見分けよう！'
       },
-      {
-        stage: 3,
-        biome: 'ruins',
-        title: 'アトランティス古代遺跡',
-        depthTarget: 24,
-        question: '「郵便局」の地図記号を探せ！',
-        missionPrompt: '手紙やハガキを届けてくれる郵便局のマークを探そう！',
-        missionHint: '街の赤いポストにもついている、あの有名な記号だ！',
-        correct: KNOWLEDGE_BASE.mapSymbols.post,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.jinja,
-          KNOWLEDGE_BASE.mapSymbols.temple,
-          KNOWLEDGE_BASE.mapSymbols.hospital
-        ]
+      post: {
+        id: 'post', name: '郵便局', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.16; ctx.lineCap = 'square';
+          ctx.beginPath();
+          ctx.moveTo(s * 0.18, s * 0.28); ctx.lineTo(s * 0.82, s * 0.28);
+          ctx.moveTo(s * 0.18, s * 0.46); ctx.lineTo(s * 0.82, s * 0.46);
+          ctx.moveTo(s / 2, s * 0.28); ctx.lineTo(s / 2, s * 0.80);
+          ctx.stroke();
+        },
+        origin: '昔の郵便をつかさどっていた「逓信省（ていしんしょう）」の「テ」を図案化したマーク(〒)です。',
+        caution: '手紙やハガキを出すポストのマークとしても身近ですね！'
       },
-      {
-        stage: 4,
-        biome: 'crystal',
-        title: '発光クリスタルの海溝',
-        depthTarget: 32,
-        question: '「1キログラム (1kg)」と同じ重さを探せ！',
-        missionPrompt: '「1kg」を「g（グラム）」に換算した正しい球体を探そう！',
-        missionHint: '「キロ」がつくと何倍になるかな？位取りを思い出そう！',
-        correct: KNOWLEDGE_BASE.units.kg_to_g,
-        dummies: [
-          { id: 'd_10g', name: '10g', type: 'unit', origin: '10gは小さな消しゴムくらいの軽さです。', caution: '1kgは1000gですよ！', draw: (ctx, s) => drawTextIcon(ctx, s, '10g') },
-          { id: 'd_100g', name: '100g', type: 'unit', origin: '100gはバナナ1本くらいの重さです。', caution: '1kgは1000gです！', draw: (ctx, s) => drawTextIcon(ctx, s, '100g') },
-          { id: 'd_10000g', name: '10000g', type: 'unit', origin: '10000gは10kgです。', caution: '0が1つ多いです！1000gを探そう。', draw: (ctx, s) => drawTextIcon(ctx, s, '10000g') }
-        ]
+      hospital: {
+        id: 'hospital', name: '病院', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.12;
+          ctx.strokeRect(s * 0.18, s * 0.18, s * 0.64, s * 0.64);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(s * 0.41, s * 0.25, s * 0.18, s * 0.50);
+          ctx.fillRect(s * 0.25, s * 0.41, s * 0.50, s * 0.18);
+        },
+        origin: '赤十字のマークを四角い囲みで守った形。お医者さんが何人もいる大きな総合病院などを表します。',
+        caution: '四角い枠の中に十字があります。'
       },
-      {
-        stage: 5,
-        biome: 'core',
-        title: 'アビスコア・水族館最深部',
-        depthTarget: 42,
-        question: '「温泉」の地図記号を探せ！',
-        missionPrompt: '温泉街や旅館でおなじみの記号を探し出そう！',
-        missionHint: 'あたたかいお湯から湯気が出ている様子を思い浮かべよう！',
-        correct: KNOWLEDGE_BASE.mapSymbols.onsen,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.koban,
-          KNOWLEDGE_BASE.mapSymbols.townhall,
-          KNOWLEDGE_BASE.mapSymbols.conifer
-        ]
-      }
-    ],
+      jinja: {
+        id: 'jinja', name: '神社', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.13; ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(s * 0.16, s * 0.26); ctx.lineTo(s * 0.84, s * 0.26);
+          ctx.moveTo(s * 0.22, s * 0.38); ctx.lineTo(s * 0.78, s * 0.38);
+          ctx.moveTo(s * 0.32, s * 0.26); ctx.lineTo(s * 0.32, s * 0.82);
+          ctx.moveTo(s * 0.68, s * 0.26); ctx.lineTo(s * 0.68, s * 0.82);
+          ctx.stroke();
+        },
+        origin: '神社への入り口にある「鳥居（とりい）」の形そのものをシンプルに描いています。',
+        caution: 'お寺（卍）と混同しないように！鳥居が神社です。'
+      },
+      temple: {
+        id: 'temple', name: '寺院 (お寺)', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.16; ctx.lineCap = 'square';
+          const h = s / 2;
+          ctx.beginPath();
+          ctx.moveTo(s * 0.22, s * 0.28); ctx.lineTo(h, s * 0.28); ctx.lineTo(h, s * 0.72); ctx.lineTo(s * 0.78, s * 0.72);
+          ctx.moveTo(s * 0.72, s * 0.22); ctx.lineTo(s * 0.72, h); ctx.lineTo(s * 0.28, h); ctx.lineTo(s * 0.28, s * 0.78);
+          ctx.stroke();
+        },
+        origin: '仏教で幸運や徳をあらわす神聖な記号「卍（まんじ）」から作られました。',
+        caution: '鳥居は神社、卍はお寺です。'
+      },
+      onsen: {
+        id: 'onsen', name: '温泉', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.12; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.ellipse(s / 2, s * 0.72, s * 0.34, s * 0.09, 0, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(s * 0.33, s * 0.58); ctx.quadraticCurveTo(s * 0.26, s * 0.44, s * 0.33, s * 0.30);
+          ctx.moveTo(s / 2, s * 0.58); ctx.quadraticCurveTo(s * 0.42, s * 0.38, s * 0.50, s * 0.18);
+          ctx.moveTo(s * 0.67, s * 0.58); ctx.quadraticCurveTo(s * 0.60, s * 0.44, s * 0.67, s * 0.30);
+          ctx.stroke();
+        },
+        origin: '温泉の湯船から、湯気が立ち上っている様子を描いた記号です。',
+        caution: '3本の湯気の長さ（真ん中が一番長い）が特徴です！'
+      },
+      paddy: {
+        id: 'paddy', name: '田 (田んぼ)', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          // 格子の田んぼ
+          ctx.strokeRect(s * 0.25, s * 0.25, s * 0.50, s * 0.50);
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.25); ctx.lineTo(s / 2, s * 0.75);
+          ctx.moveTo(s * 0.25, s / 2); ctx.lineTo(s * 0.75, s / 2);
+          ctx.stroke();
+        },
+        origin: 'お米をつくる水田のあぜ道（格子模様）から作られました。',
+        caution: '正方形の中に十字のあぜ道があるのが田んぼです。'
+      },
+      field: {
+        id: 'field', name: '畑', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.16; ctx.lineCap = 'round';
+          // 双葉・V字
+          ctx.beginPath();
+          ctx.moveTo(s * 0.25, s * 0.35); ctx.lineTo(s / 2, s * 0.72); ctx.lineTo(s * 0.75, s * 0.35);
+          ctx.stroke();
+        },
+        origin: '野菜を育てる畑から、かわいい芽（双葉）が出ている様子から作られました。',
+        caution: 'V字の双葉マークが畑です！'
+      },
+      orchard: {
+        id: 'orchard', name: '果樹園', type: 'map', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          // 丸にヘタ
+          ctx.beginPath(); ctx.arc(s / 2, s * 0.56, s * 0.26, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(s / 2, s * 0.30); ctx.lineTo(s / 2, s * 0.16); ctx.stroke();
+        },
+        origin: 'リンゴやミカンなどの果実の上にヘタ（軸）がついている様子から作られました。',
+        caution: '丸の上に小さな軸があるのが果樹園です！'
+      },
 
-    normal: [
-      {
-        stage: 1,
-        biome: 'coral',
-        title: '陽光のサンゴ礁パトロール',
-        depthTarget: 10,
-        question: '「消防署」の地図記号を探せ！',
-        missionPrompt: '火事や救急の時に駆けつけてくれる消防署の記号を探そう！',
-        missionHint: '昔の火消しが屋根を壊すのに使った道具の形がモチーフだ！警察署(✕)と間違えないように！',
-        correct: KNOWLEDGE_BASE.mapSymbols.fire,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.police,
-          KNOWLEDGE_BASE.mapSymbols.koban,
-          KNOWLEDGE_BASE.mapSymbols.hospital
-        ]
+      // 中級 (ノーマル)
+      police: {
+        id: 'police', name: '警察署', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.20; ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(s * 0.24, s * 0.24); ctx.lineTo(s * 0.76, s * 0.76);
+          ctx.moveTo(s * 0.76, s * 0.24); ctx.lineTo(s * 0.24, s * 0.76);
+          ctx.stroke();
+        },
+        origin: '警察官が昔持っていた「交差させた警棒（けいぼう）」の形から作られました。',
+        caution: '交番(⊗)は丸で囲まれていますが、警察署(✕)は丸がありません！'
       },
-      {
-        stage: 2,
-        biome: 'kelp',
-        title: 'ケルプの迷宮とシュモクザメ',
-        depthTarget: 18,
-        question: '「1リットル (1L)」と同じかさを探せ！',
-        missionPrompt: '「1L」を「dL（デシリットル）」に直した正しい球体を探そう！',
-        missionHint: '牛乳パック1本分のかさは、何デシリットルかな？',
-        correct: KNOWLEDGE_BASE.units.l_to_dl,
-        dummies: [
-          { id: 'd_100dl', name: '100dL', type: 'unit', origin: '100dLは10Lになってしまいます。', caution: '1Lは10dLです！', draw: (ctx, s) => drawTextIcon(ctx, s, '100dL') },
-          { id: 'd_1dl', name: '1dL', type: 'unit', origin: '1dLはコップ半分の量です。', caution: '1Lは10dLです！', draw: (ctx, s) => drawTextIcon(ctx, s, '1dL') },
-          { id: 'd_10ml', name: '10mL', type: 'unit', origin: '10mLは大さじ1杯弱です。', caution: '1Lは1000mLです！', draw: (ctx, s) => drawTextIcon(ctx, s, '10mL') }
-        ]
+      fire: {
+        id: 'fire', name: '消防署', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.18; ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.82); ctx.lineTo(s / 2, s * 0.48); ctx.lineTo(s * 0.22, s * 0.22);
+          ctx.moveTo(s / 2, s * 0.48); ctx.lineTo(s * 0.78, s * 0.22);
+          ctx.stroke();
+        },
+        origin: '昔の江戸の火消しが、火事を消すときに使った道具「さすまた」の形から作られました。',
+        caution: 'Y字型のさすまたです。'
       },
-      {
-        stage: 3,
-        biome: 'ruins',
-        title: 'アトランティス神殿と守護エイ',
-        depthTarget: 26,
-        question: '「市役所・区役所」の地図記号を探せ！',
-        missionPrompt: '市の政治の中心である「市役所」の記号を探し出そう！',
-        missionHint: '中心をあらわす丸いマークだ！町村役場としっかり区別しよう！',
-        correct: KNOWLEDGE_BASE.mapSymbols.cityhall,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.townhall,
-          KNOWLEDGE_BASE.mapSymbols.koban,
-          KNOWLEDGE_BASE.mapSymbols.school
-        ]
+      cityhall: {
+        id: 'cityhall', name: '市役所・区役所', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14;
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.18, 0, Math.PI * 2); ctx.stroke();
+        },
+        origin: '市の中心であることを表す「二重丸◎」。',
+        caution: '二重丸◎が市役所・区役所！'
       },
-      {
-        stage: 4,
-        biome: 'crystal',
-        title: '暗黒海溝と発光アンコウ',
-        depthTarget: 34,
-        question: '「1ヘクタール (1ha)」と同じ面積を探せ！',
-        missionPrompt: '広大な面積を表す「1ha」と同じ広さの球体を探そう！',
-        missionHint: '1辺が100mの正方形の面積を計算してみよう！(100m × 100m)',
-        correct: KNOWLEDGE_BASE.units.ha_to_m2,
-        dummies: [
-          { id: 'd_100m2', name: '100m²', type: 'unit', origin: '100m²は1a（アール）です。', caution: '1haは10,000m²（100a）です！', draw: (ctx, s) => drawTextIcon(ctx, s, '100m²') },
-          { id: 'd_1000m2', name: '1000m²', type: 'unit', origin: '1000m²は1haの10分の1です。', caution: '1haは10,000m²です！', draw: (ctx, s) => drawTextIcon(ctx, s, '1000m²') },
-          { id: 'd_100000m2', name: '100000m²', type: 'unit', origin: '100,000m²は10haです。', caution: '0の数に注意！10,000m²です。', draw: (ctx, s) => drawTextIcon(ctx, s, '100000m²') }
-        ]
+      townhall: {
+        id: 'townhall', name: '町村役場', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14;
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.16, 0, Math.PI * 2); ctx.fill();
+        },
+        origin: '円の中に小さな丸（黒点）を置いた形。町や村の役場を表します。',
+        caution: '中心が塗りつぶされているのが町村役場(⊙)です。'
       },
-      {
-        stage: 5,
-        biome: 'core',
-        title: 'メガロドンの聖域',
-        depthTarget: 45,
-        question: '「寺院 (お寺)」の地図記号を探せ！',
-        missionPrompt: 'お寺（寺院）を表す神聖な地図記号を探し出そう！',
-        missionHint: '神社の鳥居ではなく、仏教に由来する神聖な記号だ！',
-        correct: KNOWLEDGE_BASE.mapSymbols.temple,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.jinja,
-          KNOWLEDGE_BASE.mapSymbols.hospital,
-          KNOWLEDGE_BASE.mapSymbols.post
-        ]
-      }
-    ],
+      factory: {
+        id: 'factory', name: '工場', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.12;
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.20, 0, Math.PI * 2); ctx.stroke();
+          ctx.lineWidth = s * 0.14;
+          for (let i = 0; i < 8; i++) {
+            const ang = (i * Math.PI) / 4;
+            const x1 = s / 2 + Math.cos(ang) * (s * 0.20);
+            const y1 = s / 2 + Math.sin(ang) * (s * 0.20);
+            const x2 = s / 2 + Math.cos(ang) * (s * 0.40);
+            const y2 = s / 2 + Math.sin(ang) * (s * 0.40);
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+          }
+        },
+        origin: '機械を動かす「歯車（はぐるま）」の形から作られました。',
+        caution: '歯車の形が工場です！'
+      },
+      library: {
+        id: 'library', name: '図書館', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.12; ctx.lineCap = 'round';
+          // 開いた本
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.65);
+          ctx.quadraticCurveTo(s * 0.32, s * 0.58, s * 0.18, s * 0.68);
+          ctx.lineTo(s * 0.18, s * 0.35);
+          ctx.quadraticCurveTo(s * 0.32, s * 0.25, s / 2, s * 0.32);
+          ctx.quadraticCurveTo(s * 0.68, s * 0.25, s * 0.82, s * 0.35);
+          ctx.lineTo(s * 0.82, s * 0.68);
+          ctx.quadraticCurveTo(s * 0.68, s * 0.58, s / 2, s * 0.65);
+          ctx.lineTo(s / 2, s * 0.32);
+          ctx.stroke();
+        },
+        origin: 'パッと開いた「本（ブック）」の形を図案化して作られました。',
+        caution: '本を開いた形が図書館です！'
+      },
+      museum: {
+        id: 'museum', name: '博物館・美術館', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.12; ctx.lineCap = 'round';
+          // 丸天井の建物
+          ctx.beginPath(); ctx.arc(s / 2, s * 0.35, s * 0.18, Math.PI, 0); ctx.stroke();
+          ctx.strokeRect(s * 0.22, s * 0.38, s * 0.56, s * 0.38);
+          ctx.beginPath();
+          ctx.moveTo(s * 0.38, s * 0.38); ctx.lineTo(s * 0.38, s * 0.76);
+          ctx.moveTo(s * 0.62, s * 0.38); ctx.lineTo(s * 0.62, s * 0.76);
+          ctx.stroke();
+        },
+        origin: 'ギリシャ神殿のようなドーム屋根と柱を持つ建物の形から作られました。',
+        caution: 'ドーム屋根と柱のある建物が博物館・美術館です！'
+      },
+      conifer: {
+        id: 'conifer', name: '針葉樹林 (スギ・マツ)', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.18); ctx.lineTo(s * 0.22, s * 0.68);
+          ctx.moveTo(s / 2, s * 0.18); ctx.lineTo(s * 0.78, s * 0.68);
+          ctx.moveTo(s / 2, s * 0.18); ctx.lineTo(s / 2, s * 0.82);
+          ctx.stroke();
+        },
+        origin: 'スギやマツなどの尖った葉っぱの木（針葉樹）の形から作られました。',
+        caution: '三角にとがっているのが針葉樹林です。'
+      },
+      broadleaf: {
+        id: 'broadleaf', name: '広葉樹林 (サクラ・クヌギ)', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.arc(s / 2, s * 0.38, s * 0.22, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(s / 2, s * 0.60); ctx.lineTo(s / 2, s * 0.82); ctx.stroke();
+        },
+        origin: 'モコモコと丸い葉っぱを茂らせる木（広葉樹）の形から作られました。',
+        caution: '丸い形の木が広葉樹林です！'
+      },
+      castle: {
+        id: 'castle', name: '城跡 (お城のあと)', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'square';
+          // お城の石垣の凸凹
+          ctx.beginPath();
+          ctx.moveTo(s * 0.20, s * 0.65);
+          ctx.lineTo(s * 0.20, s * 0.40);
+          ctx.lineTo(s * 0.35, s * 0.40);
+          ctx.lineTo(s * 0.35, s * 0.25);
+          ctx.lineTo(s * 0.65, s * 0.25);
+          ctx.lineTo(s * 0.65, s * 0.40);
+          ctx.lineTo(s * 0.80, s * 0.40);
+          ctx.lineTo(s * 0.80, s * 0.65);
+          ctx.stroke();
+        },
+        origin: 'お城の天守閣や石垣の凸凹（銃眼）の形から作られました。',
+        caution: '凸凹した石垣の形が城跡です！'
+      },
+      tea: {
+        id: 'tea', name: '茶畑', type: 'map', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff';
+          // 3つの丸点
+          ctx.beginPath(); ctx.arc(s * 0.35, s * 0.60, s * 0.09, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(s * 0.65, s * 0.60, s * 0.09, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(s / 2, s * 0.35, s * 0.09, 0, Math.PI * 2); ctx.fill();
+        },
+        origin: '茶の実を上から見た形（3つの種）から作られました。',
+        caution: '3つの黒点が並んでいるのが茶畑です！'
+      },
 
-    hard: [
-      {
-        stage: 1,
-        biome: 'coral',
-        title: '機雷ドローン警戒海域',
-        depthTarget: 12,
-        question: '「老人ホーム」の地図記号を探せ！',
-        missionPrompt: 'お年寄りが暮らす老人ホームの地図記号を探し出そう！',
-        missionHint: '建物の中に、お年寄りが使う「ある道具」が描かれているぞ！',
-        correct: KNOWLEDGE_BASE.mapSymbols.nursing,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.hospital,
-          KNOWLEDGE_BASE.mapSymbols.cityhall,
-          KNOWLEDGE_BASE.mapSymbols.townhall
-        ]
+      // 上級 (ハード)
+      court: {
+        id: 'court', name: '裁判所', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.13; ctx.lineCap = 'round';
+          // たらい・秤の皿
+          ctx.beginPath();
+          ctx.moveTo(s * 0.20, s * 0.35);
+          ctx.lineTo(s * 0.26, s * 0.68);
+          ctx.lineTo(s * 0.74, s * 0.68);
+          ctx.lineTo(s * 0.80, s * 0.35);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(s * 0.18, s * 0.35); ctx.lineTo(s * 0.82, s * 0.35);
+          ctx.moveTo(s / 2, s * 0.35); ctx.lineTo(s / 2, s * 0.68);
+          ctx.stroke();
+        },
+        origin: '昔の裁判で罪の重さを量った「天秤（てんびん）の皿」の形から作られました。',
+        caution: 'たらいのような天秤の皿の形が裁判所です！'
       },
-      {
-        stage: 2,
-        biome: 'kelp',
-        title: 'ハンターシャーク回廊',
-        depthTarget: 20,
-        question: '「1立方メートル (1m³)」と同じ体積を探せ！',
-        missionPrompt: '「1m³」の立方体に入る水の体積(L)を探そう！',
-        missionHint: '1辺1mの立方体には、何リットルの水が入るかな？',
-        correct: KNOWLEDGE_BASE.units.m3_to_l,
-        dummies: [
-          { id: 'd_100l', name: '100L', type: 'unit', origin: '100Lは家庭のお風呂の半分ほどです。', caution: '1m³は1000L入ります！', draw: (ctx, s) => drawTextIcon(ctx, s, '100L') },
-          { id: 'd_10000l', name: '10000L', type: 'unit', origin: '10000Lは10m³です。', caution: '0が1つ多いです！1000Lを探そう。', draw: (ctx, s) => drawTextIcon(ctx, s, '10000L') },
-          { id: 'd_1000000l', name: '1000000L', type: 'unit', origin: '100万Lは競泳用プール並みの量です。', caution: '1m³は1000Lです！', draw: (ctx, s) => drawTextIcon(ctx, s, '1000000L') }
-        ]
+      tax: {
+        id: 'tax', name: '税務署', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          // そろばんの玉（ひし形 ◇）
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.20);
+          ctx.lineTo(s * 0.78, s / 2);
+          ctx.lineTo(s / 2, s * 0.80);
+          ctx.lineTo(s * 0.22, s / 2);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(s * 0.22, s / 2); ctx.lineTo(s * 0.78, s / 2);
+          ctx.stroke();
+        },
+        origin: '税金やお金を計算するときに使った「そろばんの玉」の形から作られました。',
+        caution: 'ひし形の中に横棒があるのが税務署です！'
       },
-      {
-        stage: 3,
-        biome: 'ruins',
-        title: '沈没神殿のメカ・マンタレイ',
-        depthTarget: 28,
-        question: '「工場」の地図記号を探せ！',
-        missionPrompt: 'ものづくりを行う工場の地図記号を探し出そう！',
-        missionHint: '機械を動かす大切な部品の形をしているぞ！',
-        correct: KNOWLEDGE_BASE.mapSymbols.factory,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.fire,
-          KNOWLEDGE_BASE.mapSymbols.police,
-          KNOWLEDGE_BASE.mapSymbols.koban
-        ]
+      nursing: {
+        id: 'nursing', name: '老人ホーム', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.12; ctx.lineJoin = 'round';
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.16); ctx.lineTo(s * 0.16, s * 0.44); ctx.lineTo(s * 0.24, s * 0.44);
+          ctx.lineTo(s * 0.24, s * 0.80); ctx.lineTo(s * 0.76, s * 0.80); ctx.lineTo(s * 0.76, s * 0.44);
+          ctx.lineTo(s * 0.84, s * 0.44); ctx.closePath(); ctx.stroke();
+          ctx.lineWidth = s * 0.11;
+          ctx.beginPath(); ctx.arc(s * 0.45, s * 0.52, s * 0.10, Math.PI, 0); ctx.lineTo(s * 0.55, s * 0.72); ctx.stroke();
+        },
+        origin: '住まいの「建物」の中に、お年寄りが使う「杖（つえ）」を組み合わせた記号です。',
+        caution: '建物の中に杖があるのが目印！'
       },
-      {
-        stage: 4,
-        biome: 'crystal',
-        title: '深海巨大アンコウの巣窟',
-        depthTarget: 36,
-        question: '「3500mL」を換算した正しい表記を探せ！',
-        missionPrompt: '「3500mL」をLとdLで表した正しい球体を探そう！',
-        missionHint: '1000mL=1L、100mL=1dLを思い出して位取りを計算しよう！',
-        correct: KNOWLEDGE_BASE.units.calc_3500ml,
-        dummies: [
-          { id: 'd_35l', name: '35L', type: 'unit', origin: '35Lは35,000mLです。', caution: '3500mLは3.5L（3L 5dL）です！', draw: (ctx, s) => drawTextIcon(ctx, s, '35L') },
-          { id: 'd_3l50dl', name: '3L 50dL', type: 'unit', origin: '50dLは5Lなので、合計8Lになってしまいます。', caution: '1L=10dLです！500mLは5dL！', draw: (ctx, s) => drawTextIcon(ctx, s, '3L 50dL') },
-          { id: 'd_350dl', name: '350dL', type: 'unit', origin: '350dLは35Lです。', caution: '3500mLは35dL（3L 5dL）です！', draw: (ctx, s) => drawTextIcon(ctx, s, '350dL') }
-        ]
+      powerplant: {
+        id: 'powerplant', name: '発電所・変電所', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.12;
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.32, 0, Math.PI * 2); ctx.stroke();
+          // 稲妻 ⚡
+          ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(s * 0.55, s * 0.24); ctx.lineTo(s * 0.38, s * 0.50);
+          ctx.lineTo(s * 0.60, s * 0.50); ctx.lineTo(s * 0.42, s * 0.76);
+          ctx.stroke();
+        },
+        origin: '電気を起こす施設として、円の中に稲妻（電気マーク）を描いた記号です。',
+        caution: '円の中に稲妻⚡があるのが発電所です！'
       },
-      {
-        stage: 5,
-        biome: 'core',
-        title: '太古のメガロドン＆クラーケンコア',
-        depthTarget: 48,
-        question: '「針葉樹林 (スギ・マツ)」の地図記号を探せ！',
-        missionPrompt: 'スギやマツが茂る針葉樹林の記号を探し出そう！',
-        missionHint: '尖った葉っぱを持つ木の特徴が、そのまま形になっているぞ！',
-        correct: KNOWLEDGE_BASE.mapSymbols.conifer,
-        dummies: [
-          KNOWLEDGE_BASE.mapSymbols.factory,
-          KNOWLEDGE_BASE.mapSymbols.nursing,
-          KNOWLEDGE_BASE.mapSymbols.townhall
-        ]
+      windmill: {
+        id: 'windmill', name: '風車 (風力発電)', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          // 3枚羽根
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.08, 0, Math.PI * 2); ctx.stroke();
+          for (let i = 0; i < 3; i++) {
+            const ang = (i * Math.PI * 2) / 3 - Math.PI / 2;
+            ctx.beginPath();
+            ctx.moveTo(s / 2, s / 2);
+            ctx.lineTo(s / 2 + Math.cos(ang) * (s * 0.36), s / 2 + Math.sin(ang) * (s * 0.36));
+            ctx.stroke();
+          }
+        },
+        origin: '風の力で発電する風車（3枚の羽根）の形から作られました。',
+        caution: '3本の羽根が風車です！'
+      },
+      government: {
+        id: 'government', name: '官公署 (国の役所)', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.13;
+          ctx.beginPath(); ctx.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2); ctx.stroke();
+          // 星 ★
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          for (let i = 0; i < 5; i++) {
+            const r1 = s * 0.18, r2 = s * 0.08;
+            const a1 = (i * Math.PI * 2) / 5 - Math.PI / 2;
+            const a2 = a1 + Math.PI / 5;
+            if (i === 0) ctx.moveTo(s / 2 + Math.cos(a1) * r1, s / 2 + Math.sin(a1) * r1);
+            else ctx.lineTo(s / 2 + Math.cos(a1) * r1, s / 2 + Math.sin(a1) * r1);
+            ctx.lineTo(s / 2 + Math.cos(a2) * r2, s / 2 + Math.sin(a2) * r2);
+          }
+          ctx.closePath(); ctx.fill();
+        },
+        origin: '国の重要な役所（財務局や法務局など）を表す、円の中に星を描いた記号です。',
+        caution: '丸の中に星があるのが官公署です！'
+      },
+      bamboo: {
+        id: 'bamboo', name: '竹林 (タケ・ササ)', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          // 竹の笹
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.80); ctx.lineTo(s / 2, s * 0.30);
+          ctx.moveTo(s / 2, s * 0.55); ctx.lineTo(s * 0.25, s * 0.35);
+          ctx.moveTo(s / 2, s * 0.45); ctx.lineTo(s * 0.75, s * 0.25);
+          ctx.stroke();
+        },
+        origin: 'まっすぐ伸びる竹と、斜めに出る笹の葉の形から作られました。',
+        caution: '竹の葉の形が竹林です！'
+      },
+      port: {
+        id: 'port', name: '重要港 (港湾)', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.13; ctx.lineCap = 'round';
+          // 船の錨 ⚓
+          ctx.beginPath();
+          ctx.arc(s / 2, s * 0.28, s * 0.08, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.36); ctx.lineTo(s / 2, s * 0.78);
+          ctx.moveTo(s * 0.30, s * 0.46); ctx.lineTo(s * 0.70, s * 0.46);
+          ctx.moveTo(s * 0.22, s * 0.65); ctx.quadraticCurveTo(s / 2, s * 0.85, s * 0.78, s * 0.65);
+          ctx.stroke();
+        },
+        origin: '大型船が停泊する港を表す、船の錨（いかり）の形から作られました。',
+        caution: '錨（いかり）のマークが重要港です！'
+      },
+      quarry: {
+        id: 'quarry', name: '採石場', type: 'map', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = s * 0.14; ctx.lineCap = 'round';
+          // つるはし ⛏
+          ctx.beginPath();
+          ctx.arc(s / 2, s * 0.38, s * 0.28, Math.PI * 0.8, Math.PI * 0.2, true); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(s / 2, s * 0.22); ctx.lineTo(s / 2, s * 0.78); ctx.stroke();
+        },
+        origin: '石を掘り出す道具である「つるはし」の形から作られました。',
+        caution: 'つるはしの形が採石場です！'
       }
-    ]
+    },
+
+    // 算数の単位 (全20種類)
+    units: {
+      m_to_cm: {
+        id: 'm_to_cm', name: '1m = 100cm', type: 'unit', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.32}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('100cm', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1m)', s / 2, s * 0.74);
+        },
+        origin: '【長さ】1mは100cm。「c（センチ）」は「100分の1」を表します。',
+        caution: '1mは100cmです！'
+      },
+      km_to_m: {
+        id: 'km_to_m', name: '1km = 1000m', type: 'unit', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('1000m', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1km)', s / 2, s * 0.74);
+        },
+        origin: '【長さ】1kmは1000m。「k（キロ）」は「1000倍」という意味があるよ！',
+        caution: 'キロがついたら1000倍！1kmは1000mです。'
+      },
+      cm_to_mm: {
+        id: 'cm_to_mm', name: '1cm = 10mm', type: 'unit', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.32}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('10mm', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1cm)', s / 2, s * 0.74);
+        },
+        origin: '【長さ】定規の1cmの間には小さな目盛りが10個。1cmは10mmです。',
+        caution: '1cmは10mm！'
+      },
+      kg_to_g: {
+        id: 'kg_to_g', name: '1kg = 1000g', type: 'unit', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('1000g', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1kg)', s / 2, s * 0.74);
+        },
+        origin: '【重さ】1kgは1000g。「k（キロ）」だから1000倍！',
+        caution: '1kgは1000gです。'
+      },
+      l_to_dl: {
+        id: 'l_to_dl', name: '1L = 10dL', type: 'unit', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.34}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('10dL', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1L)', s / 2, s * 0.74);
+        },
+        origin: '【かさ】1Lは10dL。「d（デシ）」は「10分の1」を表すよ。',
+        caution: '1Lは10dL！牛乳パック1本分！'
+      },
+      l_to_ml: {
+        id: 'l_to_ml', name: '1L = 1000mL', type: 'unit', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.28}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('1000mL', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1L)', s / 2, s * 0.74);
+        },
+        origin: '【かさ】1Lは1000mL。「m（ミリ）」は「1000分の1」！',
+        caution: '1Lは1000mLです！'
+      },
+      dl_to_ml: {
+        id: 'dl_to_ml', name: '1dL = 100mL', type: 'unit', level: 'easy',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('100mL', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1dL)', s / 2, s * 0.74);
+        },
+        origin: '【かさ】1dLは100mL。コップ半分の量だよ。',
+        caution: '1dLは100mL！'
+      },
+
+      // 中級 (ノーマル)
+      ha_to_m2: {
+        id: 'ha_to_m2', name: '1ha = 10000m²', type: 'unit', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.25}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('10000m²', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1ha)', s / 2, s * 0.74);
+        },
+        origin: '【面積】1辺が100mの正方形の面積が1ha = 10000m²。',
+        caution: '100m × 100m = 10,000m² です！'
+      },
+      a_to_m2: {
+        id: 'a_to_m2', name: '1a = 100m²', type: 'unit', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.32}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('100m²', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1a)', s / 2, s * 0.74);
+        },
+        origin: '【面積】1辺が10mの正方形の面積が1a（アール）= 100m²。',
+        caution: '1aは100m²です！'
+      },
+      t_to_kg: {
+        id: 't_to_kg', name: '1t = 1000kg', type: 'unit', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('1000kg', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1t)', s / 2, s * 0.74);
+        },
+        origin: '【重さ】1t（トン）は1000kg。大型トラックやゾウの重さです。',
+        caution: '1tは1000kg！'
+      },
+      ha_to_a: {
+        id: 'ha_to_a', name: '1ha = 100a', type: 'unit', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.32}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('100a', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1ha)', s / 2, s * 0.74);
+        },
+        origin: '【面積】1haは100a。アールの100倍がヘクタールです。',
+        caution: '1haは100aです！'
+      },
+      km2_to_ha: {
+        id: 'km2_to_ha', name: '1km² = 100ha', type: 'unit', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.32}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('100ha', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1km²)', s / 2, s * 0.74);
+        },
+        origin: '【面積】1km²は100ha（1,000,000m²）。街の広さを表します。',
+        caution: '1km²は100ha！'
+      },
+      m3_to_l: {
+        id: 'm3_to_l', name: '1m³ = 1000L', type: 'unit', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('1000L', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1m³)', s / 2, s * 0.74);
+        },
+        origin: '【体積】1辺1mの立方体に入る水の量はぴったり1000L！',
+        caution: '1m³は1000Lです！'
+      },
+      calc_2500m: {
+        id: 'calc_2500m', name: '2500m = 2km 500m', type: 'unit', level: 'normal',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.22}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('2km 500m', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.18}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 2500m)', s / 2, s * 0.74);
+        },
+        origin: '【長さの計算】1000m=1kmなので、2500mは「2km 500m」になります！',
+        caution: '25kmと間違えないように！'
+      },
+
+      // 上級 (ハード)
+      m3_to_cm3: {
+        id: 'm3_to_cm3', name: '1m³ = 1,000,000cm³', type: 'unit', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.21}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('1000000cm³', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.20}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1m³)', s / 2, s * 0.74);
+        },
+        origin: '【体積】100cm × 100cm × 100cm = 100万cm³！0が6個つきます。',
+        caution: '1m³は100万cm³です！'
+      },
+      calc_3500ml: {
+        id: 'calc_3500ml', name: '3500mL = 3L 5dL', type: 'unit', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.26}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('3L 5dL', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.20}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 3500mL)', s / 2, s * 0.74);
+        },
+        origin: '【かさの計算】1000mL=1L、100mL=1dLなので、3500mLは「3L 5dL」！',
+        caution: '35Lや3L 50dLと間違えないように！'
+      },
+      calc_15ha: {
+        id: 'calc_15ha', name: '1.5ha = 15000m²', type: 'unit', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.24}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('15000m²', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.20}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1.5ha)', s / 2, s * 0.74);
+        },
+        origin: '【面積の計算】1ha=10000m²なので、1.5haは「15000m²」になります。',
+        caution: '1.5haは15,000m²です！'
+      },
+      calc_4500kg: {
+        id: 'calc_4500kg', name: '4500kg = 4.5t', type: 'unit', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.32}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('4.5t', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.20}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 4500kg)', s / 2, s * 0.74);
+        },
+        origin: '【重さの計算】1000kg=1tなので、4500kgは「4.5t」または「4t 500kg」！',
+        caution: '4500kgは4.5tです！'
+      },
+      g_to_mg: {
+        id: 'g_to_mg', name: '1g = 1000mg', type: 'unit', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.28}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('1000mg', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.20}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1g)', s / 2, s * 0.74);
+        },
+        origin: '【微小な重さ】お薬などで使う1mgは1gの1000分の1。1gは1000mgです。',
+        caution: '1gは1000mgです！'
+      },
+      m_to_mm: {
+        id: 'm_to_mm', name: '1m = 1000mm', type: 'unit', level: 'hard',
+        draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          ctx.fillStyle = '#ffffff'; ctx.font = `900 ${s * 0.28}px Orbitron, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('1000mm', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.20}px "Zen Maru Gothic", sans-serif`; ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1m)', s / 2, s * 0.74);
+        },
+        origin: '【長さの換算】1mは100cm、1cmは10mmなので、1mは「1000mm」になります！',
+        caution: '1mは1000mmです！'
+      }
+    }
   };
+
+  /* ==========================================================================
+     2. モード別 ランダム問題生成システム
+     ========================================================================== */
+  const BIOMES = [
+    { stage: 1, biome: 'coral', title: '浅瀬のサンゴ礁', depth: 9 },
+    { stage: 2, biome: 'kelp', title: '巨木のケルプ海藻林', depth: 17 },
+    { stage: 3, biome: 'ruins', title: 'アトランティス古代神殿', depth: 25 },
+    { stage: 4, biome: 'crystal', title: '発光クリスタルの海溝', depth: 33 },
+    { stage: 5, biome: 'core', title: 'アビスコア・水族館最深部', depth: 43 }
+  ];
+
+  function generateRandomStages(mode) {
+    const allSymbols = Object.values(KNOWLEDGE_BASE.mapSymbols);
+    const allUnits = Object.values(KNOWLEDGE_BASE.units);
+
+    // モードに応じた問題プール抽出
+    let symbolPool = allSymbols.filter(s => s.level === mode);
+    let unitPool = allUnits.filter(u => u.level === mode);
+
+    // 足りない場合は全プールから補完
+    if (symbolPool.length < 3) symbolPool = allSymbols;
+    if (unitPool.length < 2) unitPool = allUnits;
+
+    // シャッフル
+    const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+    const shuffledSymbols = shuffleArray(symbolPool);
+    const shuffledUnits = shuffleArray(unitPool);
+
+    // 地図記号3問 ＋ 単位2問 を選出（合計5問）
+    const selectedCorrects = [
+      shuffledSymbols[0],
+      shuffledUnits[0],
+      shuffledSymbols[1],
+      shuffledUnits[1],
+      shuffledSymbols[2]
+    ];
+
+    // ステージオブジェクトを構築
+    return BIOMES.map((b, idx) => {
+      const correct = selectedCorrects[idx];
+      const isSymbol = correct.type === 'map';
+
+      // 正解と同じジャンルの別アイテムからダミー3つをランダム抽出
+      const candidates = (isSymbol ? allSymbols : allUnits).filter(item => item.id !== correct.id);
+      const shuffledCandidates = shuffleArray(candidates);
+      const dummies = [shuffledCandidates[0], shuffledCandidates[1], shuffledCandidates[2]];
+
+      let question, prompt, hint;
+      if (isSymbol) {
+        question = `「${correct.name}」の地図記号を探せ！`;
+        prompt = `「${correct.name}」を表す正しい地図記号を見つけ出そう！`;
+        hint = `街の様子や建物の特徴を思い出そう。水中の球体をよく見て探そう！`;
+      } else {
+        const parts = correct.name.split(' = ');
+        question = `「${parts[0]}」と同じ単位を探せ！`;
+        prompt = `「${parts[0]}」を換算した正しい単位の球体を探し出そう！`;
+        hint = `位取りや単位の関係式（10倍、100倍、1000倍）を思い出そう！`;
+      }
+
+      return {
+        stage: b.stage,
+        biome: b.biome,
+        title: b.title,
+        depthTarget: b.depth,
+        question: question,
+        missionPrompt: prompt,
+        missionHint: hint,
+        correct: correct,
+        dummies: dummies
+      };
+    });
+  }
 
   /* ==========================================================================
      3. 音声読み上げシステム (Web Speech API) & サウンド
@@ -2039,9 +2160,7 @@
 
     toggle() {
       this.enabled = !this.enabled;
-      if (!this.enabled && this.synth) {
-        this.synth.cancel();
-      }
+      if (!this.enabled && this.synth) this.synth.cancel();
       return this.enabled;
     }
 
@@ -2053,12 +2172,18 @@
         .replace(/1m³/g, 'いちりっぽうめーとる')
         .replace(/1ha/g, 'いちはくたーる')
         .replace(/10000m²/g, 'いちまんへいほうめーとる')
+        .replace(/15000m²/g, 'いちまんごせんへいほうめーとる')
+        .replace(/100a/g, 'ひゃくあーる')
+        .replace(/1a/g, 'いちあーる')
         .replace(/1km/g, 'いちきろめーとる')
         .replace(/1kg/g, 'いちきろぐらむ')
         .replace(/1L/g, 'いちりっとる')
         .replace(/10dL/g, 'じゅうでしりっとる')
+        .replace(/1dL/g, 'いちでしりっとる')
         .replace(/3500mL/g, 'さんぜんごひゃくみりりっとる')
         .replace(/3L 5dL/g, 'さんりっとる ごでしりっとる')
+        .replace(/2km 500m/g, 'にきろめーとる ごひゃくめーとる')
+        .replace(/4.5t/g, 'よんてんご とん')
         .replace(/100cm/g, 'ひゃくせんちめーとる');
 
       const utter = new SpeechSynthesisUtterance(spokenText);
@@ -2105,9 +2230,7 @@
       const bufferSize = this.ctx.sampleRate * 2;
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-      }
+      for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
 
       const whiteNoise = this.ctx.createBufferSource();
       whiteNoise.buffer = noiseBuffer;
@@ -2125,7 +2248,6 @@
       this.ambientGain.connect(this.ctx.destination);
       whiteNoise.start();
 
-      // エンジン音
       this.engineOsc = this.ctx.createOscillator();
       this.engineOsc.type = 'sawtooth';
       this.engineOsc.frequency.setValueAtTime(35, this.ctx.currentTime);
@@ -2205,10 +2327,8 @@
         const gain = this.ctx.createGain();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, t + idx * 0.1);
-
         gain.gain.setValueAtTime(0.2, t + idx * 0.1);
         gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.1 + 0.4);
-
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t + idx * 0.1);
@@ -2221,14 +2341,11 @@
       const t = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(150, t);
       osc.frequency.linearRampToValueAtTime(80, t + 0.35);
-
       gain.gain.setValueAtTime(0.25, t);
       gain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
-
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start(t);
@@ -2240,14 +2357,11 @@
       const t = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-
       osc.type = 'square';
       osc.frequency.setValueAtTime(90, t);
       osc.frequency.exponentialRampToValueAtTime(30, t + 0.25);
-
       gain.gain.setValueAtTime(0.35, t);
       gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
-
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start(t);
@@ -2259,14 +2373,11 @@
       const t = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-
       osc.type = 'sine';
       osc.frequency.setValueAtTime(440, t);
       osc.frequency.exponentialRampToValueAtTime(880, t + 0.4);
-
       gain.gain.setValueAtTime(0.12, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start(t);
@@ -2283,9 +2394,8 @@
       this.speech = new SpeechManager();
       this.selectedMode = 'normal';
       this.currentStageIdx = 0;
-      this.stages = GAME_STAGES[this.selectedMode];
+      this.stages = [];
 
-      // プレイヤー状態
       this.o2 = 100;
       this.shield = 100;
       this.depth = 0;
@@ -2296,25 +2406,21 @@
       this.gameActive = false;
       this.isDivingTransition = false;
 
-      // 記録用
       this.startTime = 0;
       this.missCount = 0;
       this.stealthCount = 0;
       this.clearedStagesHistory = [];
 
-      // 入力状態
       this.keys = {};
       this.touchJoy = { x: 0, y: 0 };
       this.touchUp = false;
       this.touchDown = false;
 
-      // Three.js構成要素
       this.scene = null;
       this.camera = null;
       this.renderer = null;
       this.clock = new THREE.Clock();
 
-      // オブジェクトプール
       this.submarine = null;
       this.subMeshParts = {};
       this.enemies = [];
@@ -2323,7 +2429,6 @@
       this.ruinsObjects = [];
       this.bubbleParticles = null;
 
-      // レーダー用Canvas & HUDマーカー
       this.radarCanvas = document.getElementById('radar-canvas');
       this.radarCtx = this.radarCanvas.getContext('2d');
       this.markersContainer = document.getElementById('hud-markers-container');
@@ -2372,32 +2477,20 @@
     }
 
     createAquariumEnvironment() {
-      // 海底
       const floorGeo = new THREE.PlaneGeometry(160, 160, 32, 32);
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: 0x0f2a3a,
-        roughness: 0.9,
-        metalness: 0.1
-      });
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x0f2a3a, roughness: 0.9, metalness: 0.1 });
       const floor = new THREE.Mesh(floorGeo, floorMat);
       floor.rotation.x = -Math.PI / 2;
       floor.position.y = -55;
       this.scene.add(floor);
 
-      // 水面 (Y = 0)
       const waterGeo = new THREE.PlaneGeometry(160, 160, 16, 16);
-      const waterMat = new THREE.MeshBasicMaterial({
-        color: 0x30a0ff,
-        transparent: true,
-        opacity: 0.45,
-        side: THREE.DoubleSide
-      });
+      const waterMat = new THREE.MeshBasicMaterial({ color: 0x30a0ff, transparent: true, opacity: 0.45, side: THREE.DoubleSide });
       this.waterSurface = new THREE.Mesh(waterGeo, waterMat);
       this.waterSurface.rotation.x = Math.PI / 2;
       this.waterSurface.position.y = 0;
       this.scene.add(this.waterSurface);
 
-      // 水槽ガラスフレーム
       const glassWallGeo = new THREE.BoxGeometry(150, 60, 150);
       const edges = new THREE.EdgesGeometry(glassWallGeo);
       const lineMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.15 });
@@ -2405,13 +2498,9 @@
       glassFrame.position.y = -27.5;
       this.scene.add(glassFrame);
 
-      // 岩山
       for (let i = 0; i < 20; i++) {
         const rockGeo = new THREE.DodecahedronGeometry(2 + Math.random() * 4, 1);
-        const rockMat = new THREE.MeshStandardMaterial({
-          color: (i % 2 === 0) ? 0x224455 : 0x442255,
-          roughness: 0.8
-        });
+        const rockMat = new THREE.MeshStandardMaterial({ color: (i % 2 === 0) ? 0x224455 : 0x442255, roughness: 0.8 });
         const rock = new THREE.Mesh(rockGeo, rockMat);
         const ang = Math.random() * Math.PI * 2;
         const rad = 25 + Math.random() * 40;
@@ -2424,46 +2513,31 @@
     createSubmarine() {
       this.submarine = new THREE.Group();
 
-      // メインハル (黄色と白の流線型)
       const hullGeo = new THREE.CylinderGeometry(1.1, 0.9, 4.5, 20);
       hullGeo.rotateX(Math.PI / 2);
-      const hullMat = new THREE.MeshStandardMaterial({
-        color: 0xffcc00,
-        metalness: 0.3,
-        roughness: 0.4
-      });
+      const hullMat = new THREE.MeshStandardMaterial({ color: 0xffcc00, metalness: 0.3, roughness: 0.4 });
       const hull = new THREE.Mesh(hullGeo, hullMat);
       this.submarine.add(hull);
 
-      // コックピット半球ガラス
       const domeGeo = new THREE.SphereGeometry(1.08, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
       domeGeo.rotateX(-Math.PI / 2);
-      const domeMat = new THREE.MeshPhysicalMaterial({
-        color: 0x88e0ff,
-        transparent: true,
-        opacity: 0.6,
-        roughness: 0.1,
-        transmission: 0.7
-      });
+      const domeMat = new THREE.MeshPhysicalMaterial({ color: 0x88e0ff, transparent: true, opacity: 0.6, roughness: 0.1, transmission: 0.7 });
       const dome = new THREE.Mesh(domeGeo, domeMat);
       dome.position.z = 2.25;
       this.submarine.add(dome);
 
-      // 上部セイル
       const sailGeo = new THREE.BoxGeometry(0.7, 1.0, 1.8);
       const sailMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.2, roughness: 0.5 });
       const sail = new THREE.Mesh(sailGeo, sailMat);
       sail.position.set(0, 1.2, -0.3);
       this.submarine.add(sail);
 
-      // 水平舵
       const finGeo = new THREE.BoxGeometry(3.6, 0.1, 0.8);
       const finMat = new THREE.MeshStandardMaterial({ color: 0xff3344 });
       const fin = new THREE.Mesh(finGeo, finMat);
       fin.position.set(0, 0, -1.2);
       this.submarine.add(fin);
 
-      // スクリュー
       const propGroup = new THREE.Group();
       for (let i = 0; i < 3; i++) {
         const bladeGeo = new THREE.BoxGeometry(0.12, 0.8, 0.2);
@@ -2476,7 +2550,6 @@
       this.submarine.add(propGroup);
       this.subMeshParts.propeller = propGroup;
 
-      // 前面サーチライト
       const lightLeft = new THREE.SpotLight(0xa0f0ff, 2.5, 45, Math.PI / 5, 0.4, 1.5);
       lightLeft.position.set(-0.8, 0.2, 2.2);
       lightLeft.target.position.set(-0.8, 0.2, 18);
@@ -2489,16 +2562,10 @@
       this.submarine.add(lightRight);
       this.submarine.add(lightRight.target);
 
-      // ビームコーン
       const beamGeo = new THREE.ConeGeometry(4, 25, 16, 1, true);
       beamGeo.rotateX(-Math.PI / 2);
       beamGeo.translate(0, 0, 12.5);
-      const beamMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
-        transparent: true,
-        opacity: 0.12,
-        side: THREE.DoubleSide
-      });
+      const beamMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.12, side: THREE.DoubleSide });
       const beam = new THREE.Mesh(beamGeo, beamMat);
       beam.position.set(0, 0, 2);
       this.submarine.add(beam);
@@ -2518,19 +2585,11 @@
         pPos[i + 2] = (Math.random() - 0.5) * 120;
       }
       pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-      const pMat = new THREE.PointsMaterial({
-        color: 0x88eeff,
-        size: 0.35,
-        transparent: true,
-        opacity: 0.5
-      });
+      const pMat = new THREE.PointsMaterial({ color: 0x88eeff, size: 0.35, transparent: true, opacity: 0.5 });
       this.bubbleParticles = new THREE.Points(pGeo, pMat);
       this.scene.add(this.bubbleParticles);
     }
 
-    /* --------------------------------------------------------------------------
-       ステージ準備 & 指令書提示 (答えの解説は出さない！)
-       -------------------------------------------------------------------------- */
     setupStage(stageIdx) {
       this.currentStageIdx = stageIdx;
       const stageData = this.stages[stageIdx];
@@ -2567,7 +2626,6 @@
       this.speed = 0;
       this.gameActive = false;
 
-      // 潜航指令書を表示 (答えの詳しい由来はまだ流さない！)
       this.showMissionBriefing(stageData);
     }
 
@@ -2578,10 +2636,7 @@
       document.getElementById('briefing-mission-hint').innerText = stageData.missionHint;
 
       document.getElementById('modal-briefing').classList.add('open');
-
-      // 音声読み上げ（ミッション内容とお題のみをアナウンス）
-      const ttsText = `第${stageData.stage}問。${stageData.question}。${stageData.missionHint}`;
-      this.speech.speak(ttsText);
+      this.speech.speak(`第${stageData.stage}問。${stageData.question}。${stageData.missionHint}`);
     }
 
     startDiveFromSurface() {
@@ -2631,11 +2686,7 @@
     }
 
     buildKelpForest(biome) {
-      const clusterCenters = [
-        { x: -30, z: 20, radius: 16 },
-        { x: 28, z: -25, radius: 18 }
-      ];
-
+      const clusterCenters = [{ x: -30, z: 20, radius: 16 }, { x: 28, z: -25, radius: 18 }];
       clusterCenters.forEach(c => {
         const kelpCount = (biome === 'kelp') ? 35 : 18;
         for (let i = 0; i < kelpCount; i++) {
@@ -2644,64 +2695,36 @@
           const dist = Math.random() * c.radius;
           const kX = c.x + Math.cos(ang) * dist;
           const kZ = c.z + Math.sin(ang) * dist;
-
           const height = 25 + Math.random() * 20;
-          const segments = 8;
-          const kelpGeo = new THREE.CylinderGeometry(0.18, 0.4, height, 6, segments);
-          const kelpMat = new THREE.MeshStandardMaterial({
-            color: 0x11aa44,
-            roughness: 0.7,
-            metalness: 0.1
-          });
+          const kelpGeo = new THREE.CylinderGeometry(0.18, 0.4, height, 6, 8);
+          const kelpMat = new THREE.MeshStandardMaterial({ color: 0x11aa44, roughness: 0.7, metalness: 0.1 });
           const kelpMesh = new THREE.Mesh(kelpGeo, kelpMat);
           kelpMesh.position.y = height / 2;
           kGroup.add(kelpMesh);
-
           kGroup.position.set(kX, -54, kZ);
           this.scene.add(kGroup);
 
           this.kelpForest.push({
-            group: kGroup,
-            baseX: kX,
-            baseZ: kZ,
-            height: height,
-            radius: c.radius,
-            centerX: c.x,
-            centerZ: c.z,
-            phase: Math.random() * Math.PI * 2
+            group: kGroup, baseX: kX, baseZ: kZ, height: height, radius: c.radius,
+            centerX: c.x, centerZ: c.z, phase: Math.random() * Math.PI * 2
           });
         }
       });
     }
 
     buildAtlantisRuins(biome) {
-      const ruinsCenters = [
-        { x: 0, z: -35, radius: 16 },
-        { x: -35, z: -20, radius: 14 }
-      ];
-
+      const ruinsCenters = [{ x: 0, z: -35, radius: 16 }, { x: -35, z: -20, radius: 14 }];
       ruinsCenters.forEach(rc => {
         const colCount = (biome === 'ruins' || biome === 'core') ? 8 : 4;
         for (let i = 0; i < colCount; i++) {
           const colGeo = new THREE.CylinderGeometry(1.2, 1.4, 22, 12);
-          const colMat = new THREE.MeshStandardMaterial({
-            color: 0x5a7d9a,
-            roughness: 0.6,
-            metalness: 0.2
-          });
+          const colMat = new THREE.MeshStandardMaterial({ color: 0x5a7d9a, roughness: 0.6, metalness: 0.2 });
           const col = new THREE.Mesh(colGeo, colMat);
           const ang = (i * Math.PI * 2) / colCount;
           col.position.set(rc.x + Math.cos(ang) * 9, -43, rc.z + Math.sin(ang) * 9);
           this.scene.add(col);
-
-          this.ruinsObjects.push({
-            mesh: col,
-            centerX: rc.x,
-            centerZ: rc.z,
-            radius: rc.radius
-          });
+          this.ruinsObjects.push({ mesh: col, centerX: rc.x, centerZ: rc.z, radius: rc.radius });
         }
-
         const beamGeo = new THREE.BoxGeometry(18, 2, 4);
         const beamMat = new THREE.MeshStandardMaterial({ color: 0x6e8fa8, roughness: 0.5 });
         const beam = new THREE.Mesh(beamGeo, beamMat);
@@ -2712,27 +2735,15 @@
     }
 
     spawnEnemies(stageData) {
-      let count = 2;
-      let speed = 4;
-      let aggroRange = 22;
-      let type = 'puffer';
-
-      if (stageData.stage === 1) {
-        count = 2; speed = 3.5; aggroRange = 18; type = 'puffer';
-      } else if (stageData.stage === 2) {
-        count = 3; speed = 5.0; aggroRange = 24; type = 'hammerhead';
-      } else if (stageData.stage === 3) {
-        count = 3; speed = 6.0; aggroRange = 28; type = 'manta';
-      } else if (stageData.stage === 4) {
-        count = 4; speed = 7.0; aggroRange = 32; type = 'angler';
-      } else {
-        count = 3; speed = 8.5; aggroRange = 38; type = 'megalodon';
-      }
+      let count = 2, speed = 4, aggroRange = 22, type = 'puffer';
+      if (stageData.stage === 1) { count = 2; speed = 3.5; aggroRange = 18; type = 'puffer'; }
+      else if (stageData.stage === 2) { count = 3; speed = 5.0; aggroRange = 24; type = 'hammerhead'; }
+      else if (stageData.stage === 3) { count = 3; speed = 6.0; aggroRange = 28; type = 'manta'; }
+      else if (stageData.stage === 4) { count = 4; speed = 7.0; aggroRange = 32; type = 'angler'; }
+      else { count = 3; speed = 8.5; aggroRange = 38; type = 'megalodon'; }
 
       if (this.selectedMode === 'hard') {
-        speed *= 1.25;
-        aggroRange *= 1.2;
-        count += 1;
+        speed *= 1.25; aggroRange *= 1.2; count += 1;
       }
 
       for (let i = 0; i < count; i++) {
@@ -2765,10 +2776,7 @@
           const bodyGeo = new THREE.SphereGeometry(1.8, 10, 10);
           const bodyMat = new THREE.MeshStandardMaterial({ color: 0x331144 });
           mesh = new THREE.Mesh(bodyGeo, bodyMat);
-          const lightOrb = new THREE.Mesh(
-            new THREE.SphereGeometry(0.3, 8, 8),
-            new THREE.MeshBasicMaterial({ color: 0x00ffff })
-          );
+          const lightOrb = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), new THREE.MeshBasicMaterial({ color: 0x00ffff }));
           lightOrb.position.set(0, 1.8, 1.6);
           eGroup.add(lightOrb);
           eGroup.add(mesh);
@@ -2787,12 +2795,7 @@
         const sensorGeo = new THREE.ConeGeometry(3.5, aggroRange * 0.7, 12, 1, true);
         sensorGeo.rotateX(-Math.PI / 2);
         sensorGeo.translate(0, 0, (aggroRange * 0.7) / 2);
-        const sensorMat = new THREE.MeshBasicMaterial({
-          color: 0xff2244,
-          transparent: true,
-          opacity: 0.08,
-          side: THREE.DoubleSide
-        });
+        const sensorMat = new THREE.MeshBasicMaterial({ color: 0xff2244, transparent: true, opacity: 0.08, side: THREE.DoubleSide });
         const sensorCone = new THREE.Mesh(sensorGeo, sensorMat);
         eGroup.add(sensorCone);
 
@@ -2806,29 +2809,18 @@
         this.scene.add(eGroup);
 
         this.enemies.push({
-          mesh: eGroup,
-          type: type,
-          baseY: eY,
-          speed: speed,
-          aggroRange: aggroRange,
-          patrolAngle: ang,
-          patrolRadius: dist,
-          state: 'patrol',
-          sensorMat: sensorMat
+          mesh: eGroup, type: type, baseY: eY, speed: speed, aggroRange: aggroRange,
+          patrolAngle: ang, patrolRadius: dist, state: 'patrol', sensorMat: sensorMat
         });
       }
     }
 
-    /* --------------------------------------------------------------------------
-       球体スポーン：【完全同色】で記号を極めて見やすく表示！
-       -------------------------------------------------------------------------- */
     spawnQuizTargets(stageData) {
       const items = [
         { data: stageData.correct, isCorrect: true },
         ...stageData.dummies.map(d => ({ data: d, isCorrect: false }))
       ];
 
-      // シャッフル
       for (let i = items.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [items[i], items[j]] = [items[j], items[i]];
@@ -2840,71 +2832,47 @@
       items.forEach((item, idx) => {
         const orbGroup = new THREE.Group();
 
-        // 1. 高解像度Canvas (512x512) で記号を極太・高コントラスト描画
         const canvas = document.createElement('canvas');
         canvas.width = 512;
         canvas.height = 512;
         const ctx = canvas.getContext('2d');
-
-        if (item.data.draw) {
-          item.data.draw(ctx, 512);
-        }
+        if (item.data.draw) item.data.draw(ctx, 512);
 
         const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.ClampToEdgeWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
 
-        // 2. 外側球体 (正解・ダミー問わず【完全同色・同形状】の透明クリスタル球)
+        // 外側クリスタル球 (完全同色)
         const orbGeo = new THREE.SphereGeometry(2.3, 24, 24);
         const orbMat = new THREE.MeshPhysicalMaterial({
-          color: 0x00f0ff,
-          transparent: true,
-          opacity: 0.35,
-          roughness: 0.1,
-          transmission: 0.65,
-          side: THREE.DoubleSide
+          color: 0x00f0ff, transparent: true, opacity: 0.35, roughness: 0.1, transmission: 0.65, side: THREE.DoubleSide
         });
         const orbSphere = new THREE.Mesh(orbGeo, orbMat);
         orbGroup.add(orbSphere);
 
-        // 3. 回転エネルギーリング (すべて同色)
+        // 回転エネルギーリング (完全同色)
         const ringGeo = new THREE.TorusGeometry(3.0, 0.08, 8, 32);
-        const ringMat = new THREE.MeshBasicMaterial({
-          color: 0x00f0ff,
-          transparent: true,
-          opacity: 0.8
-        });
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.8 });
         const ring = new THREE.Mesh(ringGeo, ringMat);
         orbGroup.add(ring);
 
-        // 4. 【超視認性】球体中央のビルボードプレート（常にカメラ正面を向く）
+        // 球体内部の極太ビルボードプレート
         const billboardGeo = new THREE.PlaneGeometry(3.6, 3.6);
         const billboardMat = new THREE.MeshBasicMaterial({
-          map: texture,
-          transparent: true,
-          opacity: 0.98,
-          side: THREE.DoubleSide,
-          depthWrite: false
+          map: texture, transparent: true, opacity: 0.98, side: THREE.DoubleSide, depthWrite: false
         });
         const billboard = new THREE.Mesh(billboardGeo, billboardMat);
         billboard.renderOrder = 2;
         orbGroup.add(billboard);
 
-        // 5. 【頭上ホログラム】遠くからでも見える立体頭上サイン
+        // 球体頭上の立体ホログラム看板
         const signGeo = new THREE.PlaneGeometry(2.5, 2.5);
         const signMat = new THREE.MeshBasicMaterial({
-          map: texture,
-          transparent: true,
-          opacity: 0.9,
-          side: THREE.DoubleSide,
-          depthWrite: false
+          map: texture, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false
         });
         const sign = new THREE.Mesh(signGeo, signMat);
         sign.position.set(0, 3.2, 0);
         sign.renderOrder = 3;
         orbGroup.add(sign);
 
-        // 6. 配置座標
         const ang = (idx * Math.PI * 2) / items.length + (Math.random() - 0.5) * 0.4;
         const dist = 24 + Math.random() * 22;
         const tX = Math.cos(ang) * dist;
@@ -2914,7 +2882,6 @@
         orbGroup.position.set(tX, tY, tZ);
         this.scene.add(orbGroup);
 
-        // 7. スクリーンHUDマーカー（正解・ダミー同一デザイン）
         const markerEl = document.createElement('div');
         markerEl.className = 'orb-hud-marker';
         markerEl.innerHTML = `
@@ -2926,15 +2893,9 @@
         this.markersContainer.appendChild(markerEl);
 
         const targetObj = {
-          mesh: orbGroup,
-          ring: ring,
-          billboard: billboard,
-          sign: sign,
-          data: item.data,
-          isCorrect: item.isCorrect,
-          baseY: tY,
-          phase: Math.random() * Math.PI * 2,
-          markerEl: markerEl
+          mesh: orbGroup, ring: ring, billboard: billboard, sign: sign,
+          data: item.data, isCorrect: item.isCorrect, baseY: tY,
+          phase: Math.random() * Math.PI * 2, markerEl: markerEl
         };
 
         this.targetOrbs.push(targetObj);
@@ -2942,9 +2903,6 @@
       });
     }
 
-    /* --------------------------------------------------------------------------
-       ゲームループ・アニメーション
-       -------------------------------------------------------------------------- */
     animate() {
       requestAnimationFrame(this.animate);
       const delta = Math.min(this.clock.getDelta(), 0.1);
@@ -2968,10 +2926,7 @@
     updatePlayerMovement(delta) {
       if (!this.submarine) return;
 
-      let forward = 0;
-      let yaw = 0;
-      let pitch = 0;
-
+      let forward = 0, yaw = 0, pitch = 0;
       if (this.keys['KeyW'] || this.keys['ArrowUp']) forward += 1;
       if (this.keys['KeyS'] || this.keys['ArrowDown']) forward -= 1;
       if (this.keys['KeyA'] || this.keys['ArrowLeft']) yaw += 1;
@@ -3017,23 +2972,15 @@
       const subPos = this.submarine.position;
 
       let stealthFound = false;
-
       for (const k of this.kelpForest) {
-        const dx = subPos.x - k.centerX;
-        const dz = subPos.z - k.centerZ;
-        if (Math.hypot(dx, dz) < k.radius && subPos.y < -5) {
-          stealthFound = true;
-          break;
+        if (Math.hypot(subPos.x - k.centerX, subPos.z - k.centerZ) < k.radius && subPos.y < -5) {
+          stealthFound = true; break;
         }
       }
-
       if (!stealthFound) {
         for (const r of this.ruinsObjects) {
-          const dx = subPos.x - r.centerX;
-          const dz = subPos.z - r.centerZ;
-          if (Math.hypot(dx, dz) < r.radius && subPos.y < -15) {
-            stealthFound = true;
-            break;
+          if (Math.hypot(subPos.x - r.centerX, subPos.z - r.centerZ) < r.radius && subPos.y < -15) {
+            stealthFound = true; break;
           }
         }
       }
@@ -3064,7 +3011,6 @@
 
       this.enemies.forEach(e => {
         const dist = e.mesh.position.distanceTo(subPos);
-
         if (!this.isStealth && dist < e.aggroRange) {
           e.state = 'chase';
           isAnyEnemyAggro = true;
@@ -3099,11 +3045,8 @@
       });
 
       const alertEl = document.getElementById('enemy-alert-badge');
-      if (isAnyEnemyAggro) {
-        alertEl.classList.add('show');
-      } else {
-        alertEl.classList.remove('show');
-      }
+      if (isAnyEnemyAggro) alertEl.classList.add('show');
+      else alertEl.classList.remove('show');
     }
 
     updateTargets(time) {
@@ -3117,7 +3060,6 @@
         t.ring.rotation.x += 0.02;
         t.ring.rotation.y += 0.03;
 
-        // 記号プレートと頭上看板は常にカメラ正面を向く
         t.billboard.lookAt(this.camera.position);
         t.sign.lookAt(this.camera.position);
 
@@ -3128,10 +3070,8 @@
         }
       });
 
-      // ナビコンパス（最寄りの球体エリアをナビゲート）
       if (nearestTarget) {
         document.getElementById('nav-arrow-dist').innerText = Math.round(minDist);
-
         const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.submarine.quaternion);
         const toTarget = new THREE.Vector3().subVectors(nearestTarget.mesh.position, subPos).normalize();
         const dot = forward.dot(toTarget);
@@ -3146,7 +3086,6 @@
         document.getElementById('nav-arrow-dir').innerText = dirText;
       }
 
-      // 回収判定 (5.8m以内)
       const collectBtn = document.getElementById('btn-collect-target');
       if (minDist < 5.8) {
         this.canCollectTarget = nearestTarget;
@@ -3168,7 +3107,6 @@
       this.hudMarkers.forEach(t => {
         const targetPos = t.mesh.position.clone();
         const dist = targetPos.distanceTo(subPos);
-
         targetPos.project(this.camera);
 
         const isBehind = targetPos.z > 1.0;
@@ -3197,24 +3135,16 @@
 
     updateCamera() {
       if (!this.submarine) return;
-
       if (this.isFirstPerson) {
-        const domePos = this.submarine.position.clone().add(
-          new THREE.Vector3(0, 0.4, 2.2).applyQuaternion(this.submarine.quaternion)
-        );
+        const domePos = this.submarine.position.clone().add(new THREE.Vector3(0, 0.4, 2.2).applyQuaternion(this.submarine.quaternion));
         this.camera.position.copy(domePos);
-        const lookTarget = domePos.clone().add(
-          new THREE.Vector3(0, 0, 10).applyQuaternion(this.submarine.quaternion)
-        );
+        const lookTarget = domePos.clone().add(new THREE.Vector3(0, 0, 10).applyQuaternion(this.submarine.quaternion));
         this.camera.lookAt(lookTarget);
       } else {
         const offset = new THREE.Vector3(0, 4.5, -11).applyQuaternion(this.submarine.quaternion);
         const desiredCamPos = this.submarine.position.clone().add(offset);
         this.camera.position.lerp(desiredCamPos, 0.12);
-
-        const lookTarget = this.submarine.position.clone().add(
-          new THREE.Vector3(0, 0.8, 6).applyQuaternion(this.submarine.quaternion)
-        );
+        const lookTarget = this.submarine.position.clone().add(new THREE.Vector3(0, 0.8, 6).applyQuaternion(this.submarine.quaternion));
         this.camera.lookAt(lookTarget);
       }
     }
@@ -3236,11 +3166,8 @@
 
       document.getElementById('shield-bar').style.width = `${this.shield}%`;
       document.getElementById('shield-val-text').innerText = `${Math.round(this.shield)}%`;
-      if (this.shield < 30) {
-        document.getElementById('shield-bar').classList.add('danger');
-      } else {
-        document.getElementById('shield-bar').classList.remove('danger');
-      }
+      if (this.shield < 30) document.getElementById('shield-bar').classList.add('danger');
+      else document.getElementById('shield-bar').classList.remove('danger');
 
       document.getElementById('metric-depth').innerText = this.depth.toFixed(1);
       document.getElementById('metric-speed').innerText = Math.abs(this.speed).toFixed(1);
@@ -3305,17 +3232,11 @@
       ctx.rotate(-this.submarine.rotation.y);
       ctx.fillStyle = '#00ff88';
       ctx.beginPath();
-      ctx.moveTo(0, -6);
-      ctx.lineTo(4, 5);
-      ctx.lineTo(-4, 5);
-      ctx.closePath();
-      ctx.fill();
+      ctx.moveTo(0, -6); ctx.lineTo(4, 5); ctx.lineTo(-4, 5);
+      ctx.closePath(); ctx.fill();
       ctx.restore();
     }
 
-    /* --------------------------------------------------------------------------
-       ターゲット回収判定 & 教育的フィードバック（正解した後に詳しい解説を流す！）
-       -------------------------------------------------------------------------- */
     collectCurrentTarget() {
       if (!this.canCollectTarget) return;
 
@@ -3323,13 +3244,11 @@
       const stageData = this.stages[this.currentStageIdx];
 
       if (target.isCorrect) {
-        // 正解！ここで初めて詳しい解説と由来を流す！
         this.gameActive = false;
         this.sound.playCorrect();
         this.clearedStagesHistory.push(target.data);
         this.showExplanationModal(target.data);
       } else {
-        // 不正解（ダミー）：2つの記号を並べて比較学習
         this.missCount++;
         this.sound.playWrong();
         this.takeDamage(12);
@@ -3350,8 +3269,6 @@
       if (data.draw) data.draw(ctx, 140);
 
       document.getElementById('modal-explanation').classList.add('open');
-
-      // 正解後に音声読み上げ
       this.speech.speak(`大正解！正解は、${data.name}です！${data.origin}`);
     }
 
@@ -3457,7 +3374,8 @@
 
     startNewGame(mode) {
       this.selectedMode = mode;
-      this.stages = GAME_STAGES[mode];
+      // 毎回ランダムに5問を生成！
+      this.stages = generateRandomStages(mode);
       this.currentStageIdx = 0;
       this.o2 = 100;
       this.shield = 100;
@@ -3473,9 +3391,6 @@
       document.getElementById('modal-clear').classList.remove('open');
     }
 
-    /* --------------------------------------------------------------------------
-       入力 & UI イベント設定
-       -------------------------------------------------------------------------- */
     initInputs() {
       window.addEventListener('keydown', (e) => {
         this.keys[e.code] = true;
@@ -3491,11 +3406,9 @@
         this.keys[e.code] = false;
       });
 
-      // モバイルジョイスティック
       const stick = document.getElementById('touch-joystick');
       const knob = document.getElementById('joystick-knob');
-      let touchId = null;
-      let center = { x: 0, y: 0 };
+      let touchId = null, center = { x: 0, y: 0 };
 
       stick.addEventListener('touchstart', (e) => {
         const touch = e.changedTouches[0];
@@ -3588,8 +3501,8 @@
       });
 
       document.getElementById('btn-replay').addEventListener('click', () => {
-        document.getElementById('modal-clear').classList.remove('open');
-        document.getElementById('modal-start').classList.add('open');
+        // もう一度挑戦する時も新しくランダム出題！
+        this.startNewGame(this.selectedMode);
       });
 
       document.getElementById('btn-cam-view').addEventListener('click', () => {
