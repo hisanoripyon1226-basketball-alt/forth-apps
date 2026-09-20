@@ -8,7 +8,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
   
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,8 +24,8 @@
       --accent-gold: #ffd700;
       --accent-green: #00ff88;
       --danger-red: #ff3366;
-      --panel-bg: rgba(6, 20, 38, 0.82);
-      --panel-border: rgba(0, 240, 255, 0.35);
+      --panel-bg: rgba(6, 20, 38, 0.84);
+      --panel-border: rgba(0, 240, 255, 0.4);
       --font-main: 'Zen Maru Gothic', sans-serif;
       --font-hud: 'Orbitron', monospace;
     }
@@ -52,7 +52,6 @@
       font-size: 0.65em;
       color: #a5e7ff;
       font-weight: normal;
-      user-select: none;
     }
 
     #webgl-canvas {
@@ -64,7 +63,7 @@
       z-index: 1;
     }
 
-    /* 水中・ガラス・照準エフェクト */
+    /* 水中・ガラス・光エフェクト */
     #caustics-overlay {
       position: absolute;
       top: 0;
@@ -134,7 +133,7 @@
       opacity: 1;
     }
 
-    /* 3D追従HUDマーカーレイヤー */
+    /* 3D追従HUDマーカーレイヤー（正解もダミーも同じシアン枠で統一！） */
     #hud-markers-container {
       position: absolute;
       top: 0;
@@ -156,34 +155,25 @@
       pointer-events: none;
     }
     .orb-hud-marker .bracket-box {
-      width: 44px;
-      height: 44px;
-      border: 2px solid rgba(0, 240, 255, 0.8);
+      width: 48px;
+      height: 48px;
+      border: 2px solid rgba(0, 240, 255, 0.85);
       border-radius: 8px;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: rgba(0, 30, 60, 0.4);
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
-      animation: markerPulse 2s infinite ease-in-out;
-    }
-    .orb-hud-marker.correct .bracket-box {
-      border-color: #ffd700;
-      box-shadow: 0 0 14px #ffd700;
+      background: rgba(4, 20, 45, 0.5);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
     }
     .orb-hud-marker .marker-dist {
       font-family: var(--font-hud);
       font-size: 11px;
       color: #00f0ff;
       margin-top: 3px;
-      background: rgba(4, 15, 30, 0.85);
-      padding: 1px 6px;
+      background: rgba(4, 15, 30, 0.88);
+      padding: 1px 7px;
       border-radius: 4px;
-      border: 1px solid rgba(0, 240, 255, 0.3);
-    }
-    @keyframes markerPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.08); }
+      border: 1px solid rgba(0, 240, 255, 0.35);
     }
 
     /* HUD メインレイヤー */
@@ -234,7 +224,6 @@
       font-size: 11px;
       color: #9cd5ff;
       margin-bottom: 3px;
-      letter-spacing: 0.5px;
       font-family: var(--font-main);
     }
 
@@ -244,7 +233,6 @@
       background: rgba(255, 255, 255, 0.1);
       border-radius: 4px;
       overflow: hidden;
-      position: relative;
     }
 
     .progress-bar-fill {
@@ -284,20 +272,13 @@
     .mission-center-panel {
       flex: 1;
       max-width: 580px;
-      background: linear-gradient(180deg, rgba(6, 25, 52, 0.92) 0%, rgba(4, 15, 32, 0.88) 100%);
+      background: linear-gradient(180deg, rgba(6, 25, 52, 0.94) 0%, rgba(4, 15, 32, 0.9) 100%);
       backdrop-filter: blur(12px);
       border: 2px solid var(--primary-cyan);
       border-radius: 16px;
       padding: 10px 18px;
       text-align: center;
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.1);
-      position: relative;
-      animation: bannerPulse 4s infinite ease-in-out;
-    }
-
-    @keyframes bannerPulse {
-      0%, 100% { border-color: rgba(0, 240, 255, 0.5); }
-      50% { border-color: rgba(0, 240, 255, 0.95); }
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
     }
 
     .stage-badge-container {
@@ -315,7 +296,6 @@
       padding: 2px 10px;
       border-radius: 20px;
       font-size: 11px;
-      letter-spacing: 1px;
       font-weight: bold;
     }
 
@@ -343,7 +323,6 @@
       font-weight: 900;
       color: #ffffff;
       text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
-      letter-spacing: 0.5px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -393,7 +372,7 @@
       border-radius: 50%;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), inset 0 0 20px rgba(0, 240, 255, 0.15);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
     }
 
     #radar-canvas {
@@ -437,16 +416,14 @@
       cursor: pointer;
       font-size: 14px;
       transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
     .hud-btn:hover {
       background: rgba(0, 240, 255, 0.25);
       border-color: var(--primary-cyan);
-      box-shadow: 0 0 10px var(--primary-cyan);
       transform: scale(1.05);
     }
 
-    /* 中央通知アラート (ENEMY ALERT / STEALTH / COMPASS) */
+    /* 中央通知アラート */
     .hud-center-alerts {
       display: flex;
       flex-direction: column;
@@ -456,9 +433,9 @@
     }
 
     .target-nav-arrow {
-      background: rgba(6, 25, 52, 0.8);
-      border: 1px solid var(--accent-gold);
-      color: var(--accent-gold);
+      background: rgba(6, 25, 52, 0.85);
+      border: 1px solid var(--primary-cyan);
+      color: #9eefff;
       padding: 4px 14px;
       border-radius: 20px;
       font-size: 11px;
@@ -466,8 +443,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
-      transition: opacity 0.3s;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
     }
 
     .stealth-indicator {
@@ -559,7 +535,7 @@
     }
 
     .big-hud-btn {
-      background: linear-gradient(180deg, rgba(0, 240, 255, 0.25), rgba(4, 18, 36, 0.8));
+      background: linear-gradient(180deg, rgba(0, 240, 255, 0.25), rgba(4, 18, 36, 0.85));
       border: 2px solid var(--primary-cyan);
       color: #fff;
       border-radius: 14px;
@@ -576,17 +552,16 @@
     }
     .big-hud-btn:hover {
       background: linear-gradient(180deg, rgba(0, 240, 255, 0.45), rgba(0, 100, 150, 0.8));
-      box-shadow: 0 0 25px var(--primary-cyan);
       transform: translateY(-2px);
     }
     .big-hud-btn.capture-ready {
-      background: linear-gradient(180deg, rgba(255, 215, 0, 0.45), rgba(180, 130, 0, 0.85));
-      border-color: var(--accent-gold);
-      box-shadow: 0 0 25px var(--accent-gold);
-      animation: pulseGold 1s infinite alternate;
+      background: linear-gradient(180deg, rgba(0, 240, 255, 0.5), rgba(0, 130, 200, 0.9));
+      border-color: #00f0ff;
+      box-shadow: 0 0 25px #00f0ff;
+      animation: pulseCyan 1s infinite alternate;
     }
 
-    @keyframes pulseGold {
+    @keyframes pulseCyan {
       from { transform: scale(1); }
       to { transform: scale(1.05); }
     }
@@ -641,7 +616,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
     }
     .vert-btn:active {
       background: var(--primary-cyan);
@@ -724,15 +698,12 @@
     }
     .mode-card.easy.selected {
       border-color: var(--accent-green);
-      box-shadow: 0 0 15px var(--accent-green);
     }
     .mode-card.normal.selected {
       border-color: var(--primary-cyan);
-      box-shadow: 0 0 15px var(--primary-cyan);
     }
     .mode-card.hard.selected {
       border-color: #ff9900;
-      box-shadow: 0 0 15px #ff9900;
     }
 
     .mode-icon {
@@ -781,22 +752,19 @@
       transition: all 0.2s;
       margin-left: 8px;
     }
-    .secondary-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
 
-    /* 潜航指令書 (MISSION BRIEFING) 専用カード */
+    /* 潜航指令書 (MISSION BRIEFING) カード (答えの解説はまだ出さない！) */
     .briefing-card {
-      border: 2px solid var(--accent-gold);
-      box-shadow: 0 0 45px rgba(255, 215, 0, 0.35);
+      border: 2px solid var(--primary-cyan);
+      box-shadow: 0 0 45px rgba(0, 240, 255, 0.35);
     }
     .briefing-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 215, 0, 0.2);
-      border: 1px solid var(--accent-gold);
-      color: var(--accent-gold);
+      background: rgba(0, 240, 255, 0.2);
+      border: 1px solid var(--primary-cyan);
+      color: var(--primary-cyan);
       padding: 4px 16px;
       border-radius: 20px;
       font-size: 12px;
@@ -804,44 +772,37 @@
       margin-bottom: 12px;
     }
 
-    .briefing-orb-preview {
-      width: 140px;
-      height: 140px;
-      margin: 10px auto 14px;
-      background: radial-gradient(circle, rgba(0, 240, 255, 0.25), rgba(4, 15, 30, 0.8));
-      border: 2px solid var(--primary-cyan);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
-      position: relative;
-    }
-    .briefing-orb-preview canvas {
-      width: 110px;
-      height: 110px;
-    }
-
     .briefing-explanation-card {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.45);
       border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 20px;
+      padding: 16px 20px;
+      margin: 16px 0 20px;
       text-align: left;
-      font-size: 13px;
-      line-height: 1.7;
+      font-size: 14px;
+      line-height: 1.8;
       color: #e3f2fd;
-      border-left: 4px solid var(--accent-gold);
+      border-left: 4px solid var(--primary-cyan);
     }
     .briefing-explanation-card strong {
       color: var(--accent-gold);
     }
-    .briefing-caution {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.15);
-      color: #ffd080;
-      font-size: 12px;
+
+    /* 正解解説モーダル・アイコンプレビュー */
+    .explanation-orb-preview {
+      width: 140px;
+      height: 140px;
+      margin: 12px auto 16px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.2), rgba(4, 15, 30, 0.9));
+      border: 3px solid var(--accent-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+    }
+    .explanation-orb-preview canvas {
+      width: 110px;
+      height: 110px;
     }
 
     /* 正解・不正解 比較モーダル */
@@ -870,8 +831,8 @@
       background: rgba(0, 255, 136, 0.1);
     }
     .compare-box canvas {
-      width: 80px;
-      height: 80px;
+      width: 90px;
+      height: 90px;
       margin: 6px 0;
     }
     .compare-title {
@@ -901,8 +862,8 @@
       gap: 12px;
     }
     .study-note-item canvas {
-      width: 48px;
-      height: 48px;
+      width: 54px;
+      height: 54px;
       flex-shrink: 0;
     }
     .study-note-info {
@@ -967,8 +928,8 @@
       text-align: center;
     }
     .enc-item canvas {
-      width: 64px;
-      height: 64px;
+      width: 74px;
+      height: 74px;
       margin-bottom: 6px;
     }
     .enc-item-title {
@@ -1023,7 +984,7 @@
   <div id="dive-splash-overlay"></div>
   <div id="damage-flash"></div>
 
-  <!-- 3D追従ターゲットHUDブラケットレイヤー -->
+  <!-- 3D追従ターゲットHUDブラケットレイヤー（全球体共通デザイン） -->
   <div id="hud-markers-container"></div>
 
   <!-- HUD オーバーレイ -->
@@ -1069,7 +1030,7 @@
           <span id="mission-target-text">「学校」の地図記号を探せ！</span>
           <button class="mission-tts-btn" id="btn-hud-tts" title="音声で読み上げ"><i class="fa-solid fa-volume-high"></i></button>
         </div>
-        <div class="mission-hint-sub" id="mission-target-hint">光る球体に近づいて[F]キーで回収しよう</div>
+        <div class="mission-hint-sub" id="mission-target-hint">球体に近づいて記号を確認し[F]キーで回収しよう</div>
       </div>
 
       <!-- レーダー & アクションボタン -->
@@ -1098,7 +1059,7 @@
     <!-- 中央通知 (ステルス & 警告 & ナビ矢印) -->
     <div class="hud-center-alerts">
       <div class="target-nav-arrow" id="target-nav-arrow">
-        <i class="fa-solid fa-compass"></i> 正解の球体は <span id="nav-arrow-dir">前方</span> (約<span id="nav-arrow-dist">25</span>m)
+        <i class="fa-solid fa-compass"></i> 最寄りの球体エリア: <span id="nav-arrow-dir">前方</span> (約<span id="nav-arrow-dist">25</span>m)
       </div>
       <div class="stealth-indicator" id="stealth-badge">
         <i class="fa-solid fa-leaf"></i> 🌿 ステルス<ruby>隠蔽中<rt>いんぺいちゅう</rt></ruby> (<ruby>敵<rt>てき</rt></ruby>から<ruby>見<rt>み</rt></ruby>つかりません)
@@ -1174,12 +1135,12 @@
       </div>
 
       <div style="font-size: 12px; color: #8ec3eb; line-height: 1.6;">
-        💡 <strong>学びのポイント</strong>: 各ステージの開始前に「お題の形と意味」の指令書が表示されます。しっかり覚えてから潜航しよう！
+        💡 <strong>探査の掟</strong>: 球体の色は正解もダミーもすべて同じ！球体に近づいて描かれた記号をしっかり自分の目で確かめよう！
       </div>
     </div>
   </div>
 
-  <!-- 2. 【教育的予習ステップ】潜航ミッションブリーフィング（指令書）モーダル -->
+  <!-- 2. 【潜水前】潜航ミッション指令書 (答えの解説はまだ出さない！) -->
   <div class="modal-overlay" id="modal-briefing">
     <div class="modal-card briefing-card">
       <div class="briefing-badge">
@@ -1188,50 +1149,49 @@
 
       <h2 class="modal-title" id="briefing-mission-title">「学校」を探せ！</h2>
 
-      <!-- 探す球体の3D回転プレビュー -->
-      <div class="briefing-orb-preview">
-        <canvas id="briefing-canvas" width="140" height="140"></canvas>
-      </div>
-
       <div class="briefing-explanation-card">
-        <div><strong>【形と意味の由来】</strong></div>
-        <div id="briefing-origin-text">文という漢字をモチーフにして作られた記号だよ！小・中学校を表すよ。</div>
-        <div class="briefing-caution" id="briefing-caution-text">
-          ⚠️ <strong>ここが紛らわしい！</strong> 高校は「文」の周りに丸◯がつきます。交番や警察署と間違えないようにしよう！
+        <div style="font-size: 15px; font-weight: bold; color: var(--primary-cyan); margin-bottom: 8px;">
+          <i class="fa-solid fa-bullseye"></i> 今回のターゲットミッション
         </div>
+        <div id="briefing-mission-prompt" style="font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 10px;">
+          「学校」を表す正しい地図記号を見つけ出そう！
+        </div>
+        <div><strong>【探査の心得・ヒント】</strong></div>
+        <div id="briefing-mission-hint">水中の球体には様々な記号が浮かんでいるぞ。よく似たダミーに惑わされず、本物を探し出そう！</div>
       </div>
 
       <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
         <button class="secondary-btn" id="btn-briefing-tts" style="margin:0;">
-          <i class="fa-solid fa-volume-high"></i> 音声で聞く
+          <i class="fa-solid fa-volume-high"></i> 音声を聞く
         </button>
         <button class="primary-btn" id="btn-start-dive" style="background: linear-gradient(90deg, #00f0ff, #0072ff);">
-          <i class="fa-solid fa-water"></i> 理解した！深海へ潜航開始 (DIVE!)
+          <i class="fa-solid fa-water"></i> 了解！深海へ潜航開始 (DIVE!)
         </button>
       </div>
     </div>
   </div>
 
-  <!-- 3. 正解・解説モーダル -->
+  <!-- 3. 【正解後】正解・詳しい解説モーダル (正解した後に流れる！) -->
   <div class="modal-overlay" id="modal-explanation">
     <div class="modal-card">
       <div class="briefing-badge" style="border-color: var(--accent-green); color: var(--accent-green); background: rgba(0,255,136,0.15);">
-        <i class="fa-solid fa-circle-check"></i> 正解！ターゲット回収成功！
+        <i class="fa-solid fa-circle-check"></i> 見事正解！ターゲット回収成功！
       </div>
-      <h2 class="modal-title" id="modal-exp-title">「学校」の地図記号</h2>
+      <h2 class="modal-title" id="modal-exp-title" style="color: #fff;">「学校」の地図記号</h2>
       
-      <div class="briefing-orb-preview" style="border-color: var(--accent-green); width: 110px; height: 110px;">
-        <canvas id="exp-icon-canvas" width="110" height="110"></canvas>
+      <!-- 正解記号の超鮮明プレビュー -->
+      <div class="explanation-orb-preview">
+        <canvas id="exp-icon-canvas" width="140" height="140"></canvas>
       </div>
 
       <div class="briefing-explanation-card" id="modal-exp-body" style="border-left-color: var(--accent-green);">
-        <strong>【小学校の学び・解説】</strong><br>
-        「文」という漢字をモチーフにして作られた記号だよ！
+        <strong>【由来・意味の解説】</strong><br>
+        「文」という漢字をモチーフにして作られた記号だよ！小・中学校を表します。
       </div>
 
       <div style="display: flex; justify-content: center; gap: 10px;">
         <button class="secondary-btn" id="btn-exp-tts" style="margin:0;">
-          <i class="fa-solid fa-volume-high"></i> 音声で聞く
+          <i class="fa-solid fa-volume-high"></i> 解説を音声で聞く
         </button>
         <button class="primary-btn" id="btn-next-stage">
           次なる指令へ進む <i class="fa-solid fa-chevron-right"></i>
@@ -1252,14 +1212,14 @@
         <!-- あなたが選んだ球体 -->
         <div class="compare-box wrong-one">
           <div class="compare-title" style="color: var(--danger-red);">❌ あなたが選んだ記号</div>
-          <canvas id="wrong-compare-canvas" width="80" height="80"></canvas>
-          <div style="font-size: 12px; font-weight: bold;" id="wrong-symbol-name">交番</div>
+          <canvas id="wrong-compare-canvas" width="90" height="90"></canvas>
+          <div style="font-size: 13px; font-weight: bold;" id="wrong-symbol-name">交番</div>
         </div>
         <!-- 探すべき本物 -->
         <div class="compare-box correct-one">
           <div class="compare-title" style="color: var(--accent-green);">⭕ 探している本物</div>
-          <canvas id="correct-compare-canvas" width="80" height="80"></canvas>
-          <div style="font-size: 12px; font-weight: bold;" id="correct-symbol-name">消防署</div>
+          <canvas id="correct-compare-canvas" width="90" height="90"></canvas>
+          <div style="font-size: 13px; font-weight: bold;" id="correct-symbol-name">消防署</div>
         </div>
       </div>
 
@@ -1292,7 +1252,6 @@
         </div>
       </div>
 
-      <!-- 今回学んだこと おさらいノート一覧 -->
       <div style="text-align: left; font-size: 13px; font-weight: bold; color: var(--primary-cyan); margin-bottom: 6px;">
         📝 本日の深海学習ノート (覚えた記号・単位)
       </div>
@@ -1350,18 +1309,21 @@
   <!-- ゲームプログラムメインスクリプト -->
   <script>
   /* ==========================================================================
-     1. 学習マスターデータ (地図記号 & 単位)
+     1. 超高解像度・極太線画・高コントラスト 記号＆単位マスターデータ
      ========================================================================== */
   const KNOWLEDGE_BASE = {
-    // 地図記号
+    // 地図記号 (社会科)
     mapSymbols: {
       school: {
         id: 'school',
         name: '学校 (小・中学校)',
         type: 'map',
         draw: (ctx, s) => {
+          // 背景サークル
+          drawBaseCircle(ctx, s);
+          // 極太 文
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.72}px serif`;
+          ctx.font = `900 ${s * 0.72}px "Zen Maru Gothic", sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText('文', s / 2, s / 2);
@@ -1374,13 +1336,16 @@
         name: '警察署',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 極太交差警棒 ✕
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.14;
+          ctx.lineWidth = s * 0.20;
+          ctx.lineCap = 'round';
           ctx.beginPath();
-          ctx.moveTo(s * 0.22, s * 0.22);
-          ctx.lineTo(s * 0.78, s * 0.78);
-          ctx.moveTo(s * 0.78, s * 0.22);
-          ctx.lineTo(s * 0.22, s * 0.78);
+          ctx.moveTo(s * 0.24, s * 0.24);
+          ctx.lineTo(s * 0.76, s * 0.76);
+          ctx.moveTo(s * 0.76, s * 0.24);
+          ctx.lineTo(s * 0.24, s * 0.76);
           ctx.stroke();
         },
         origin: '警察官が昔持っていた「交差させた警棒（けいぼう）」の形から作られました。',
@@ -1391,8 +1356,11 @@
         name: '交番',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 丸の中に✕
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.09;
+          ctx.lineWidth = s * 0.14;
+          ctx.lineCap = 'round';
           ctx.beginPath();
           ctx.arc(s / 2, s / 2, s * 0.35, 0, Math.PI * 2);
           ctx.stroke();
@@ -1411,15 +1379,18 @@
         name: '郵便局',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 極太 〒
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.11;
+          ctx.lineWidth = s * 0.16;
+          ctx.lineCap = 'square';
           ctx.beginPath();
-          ctx.moveTo(s * 0.2, s * 0.28);
-          ctx.lineTo(s * 0.8, s * 0.28);
-          ctx.moveTo(s * 0.2, s * 0.44);
-          ctx.lineTo(s * 0.8, s * 0.44);
+          ctx.moveTo(s * 0.18, s * 0.28);
+          ctx.lineTo(s * 0.82, s * 0.28);
+          ctx.moveTo(s * 0.18, s * 0.46);
+          ctx.lineTo(s * 0.82, s * 0.46);
           ctx.moveTo(s / 2, s * 0.28);
-          ctx.lineTo(s / 2, s * 0.78);
+          ctx.lineTo(s / 2, s * 0.80);
           ctx.stroke();
         },
         origin: '昔の郵便をつかさどっていた「逓信省（ていしんしょう）」の「テ」を図案化したマーク(〒)です。',
@@ -1430,14 +1401,17 @@
         name: '消防署',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 極太 さすまた (Y字)
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.12;
+          ctx.lineWidth = s * 0.18;
+          ctx.lineCap = 'round';
           ctx.beginPath();
           ctx.moveTo(s / 2, s * 0.82);
-          ctx.lineTo(s / 2, s * 0.5);
-          ctx.lineTo(s * 0.2, s * 0.22);
-          ctx.moveTo(s / 2, s * 0.5);
-          ctx.lineTo(s * 0.8, s * 0.22);
+          ctx.lineTo(s / 2, s * 0.48);
+          ctx.lineTo(s * 0.22, s * 0.22);
+          ctx.moveTo(s / 2, s * 0.48);
+          ctx.lineTo(s * 0.78, s * 0.22);
           ctx.stroke();
         },
         origin: '昔の江戸の火消しが、火事を消すときに屋根を壊すために使った道具「さすまた」の形から作られました。',
@@ -1448,12 +1422,14 @@
         name: '病院',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 四角い盾＋十字
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.08;
+          ctx.lineWidth = s * 0.12;
           ctx.strokeRect(s * 0.18, s * 0.18, s * 0.64, s * 0.64);
           ctx.fillStyle = '#ffffff';
-          ctx.fillRect(s * 0.43, s * 0.26, s * 0.14, s * 0.48);
-          ctx.fillRect(s * 0.26, s * 0.43, s * 0.48, s * 0.14);
+          ctx.fillRect(s * 0.41, s * 0.25, s * 0.18, s * 0.50);
+          ctx.fillRect(s * 0.25, s * 0.41, s * 0.50, s * 0.18);
         },
         origin: '赤十字のマークを四角い囲みで守った形。お医者さんが何人もいる大きな総合病院などを表します。',
         caution: '四角い枠の中に十字があります。個人の診療所ではなく大きな病院です。'
@@ -1463,13 +1439,15 @@
         name: '市役所・区役所',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 二重丸 ◎
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.09;
+          ctx.lineWidth = s * 0.14;
           ctx.beginPath();
           ctx.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2);
           ctx.stroke();
           ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.2, 0, Math.PI * 2);
+          ctx.arc(s / 2, s / 2, s * 0.18, 0, Math.PI * 2);
           ctx.stroke();
         },
         origin: '市の中心であることを表す「二重丸◎」。',
@@ -1480,14 +1458,16 @@
         name: '町村役場',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 丸に黒点 ⊙
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.09;
+          ctx.lineWidth = s * 0.14;
           ctx.beginPath();
           ctx.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2);
           ctx.stroke();
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.12, 0, Math.PI * 2);
+          ctx.arc(s / 2, s / 2, s * 0.16, 0, Math.PI * 2);
           ctx.fill();
         },
         origin: '円の中に小さな丸（黒点）を置いた形。町や村の役場を表します。',
@@ -1498,17 +1478,20 @@
         name: '神社',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 鳥居 ⛩
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.09;
+          ctx.lineWidth = s * 0.13;
+          ctx.lineCap = 'round';
           ctx.beginPath();
-          ctx.moveTo(s * 0.18, s * 0.26);
-          ctx.lineTo(s * 0.82, s * 0.26);
-          ctx.moveTo(s * 0.24, s * 0.38);
-          ctx.lineTo(s * 0.76, s * 0.38);
+          ctx.moveTo(s * 0.16, s * 0.26);
+          ctx.lineTo(s * 0.84, s * 0.26);
+          ctx.moveTo(s * 0.22, s * 0.38);
+          ctx.lineTo(s * 0.78, s * 0.38);
           ctx.moveTo(s * 0.32, s * 0.26);
-          ctx.lineTo(s * 0.32, s * 0.8);
+          ctx.lineTo(s * 0.32, s * 0.82);
           ctx.moveTo(s * 0.68, s * 0.26);
-          ctx.lineTo(s * 0.68, s * 0.8);
+          ctx.lineTo(s * 0.68, s * 0.82);
           ctx.stroke();
         },
         origin: '神社への入り口にある「鳥居（とりい）」の形そのものをシンプルに描いています。',
@@ -1519,12 +1502,15 @@
         name: '寺院 (お寺)',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 卍
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.11;
+          ctx.lineWidth = s * 0.16;
+          ctx.lineCap = 'square';
           const h = s / 2;
           ctx.beginPath();
-          ctx.moveTo(s * 0.24, s * 0.3); ctx.lineTo(h, s * 0.3); ctx.lineTo(h, s * 0.7); ctx.lineTo(s * 0.76, s * 0.7);
-          ctx.moveTo(s * 0.7, s * 0.24); ctx.lineTo(s * 0.7, h); ctx.lineTo(s * 0.3, h); ctx.lineTo(s * 0.3, s * 0.76);
+          ctx.moveTo(s * 0.22, s * 0.28); ctx.lineTo(h, s * 0.28); ctx.lineTo(h, s * 0.72); ctx.lineTo(s * 0.78, s * 0.72);
+          ctx.moveTo(s * 0.72, s * 0.22); ctx.lineTo(s * 0.72, h); ctx.lineTo(s * 0.28, h); ctx.lineTo(s * 0.28, s * 0.78);
           ctx.stroke();
         },
         origin: '仏教で幸運や徳をあらわす神聖な記号「卍（まんじ）」から作られました。',
@@ -1535,17 +1521,20 @@
         name: '工場',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 歯車 ⚙
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.08;
+          ctx.lineWidth = s * 0.12;
           ctx.beginPath();
-          ctx.arc(s / 2, s / 2, s * 0.22, 0, Math.PI * 2);
+          ctx.arc(s / 2, s / 2, s * 0.20, 0, Math.PI * 2);
           ctx.stroke();
+          ctx.lineWidth = s * 0.14;
           for (let i = 0; i < 8; i++) {
             const ang = (i * Math.PI) / 4;
-            const x1 = s / 2 + Math.cos(ang) * (s * 0.22);
-            const y1 = s / 2 + Math.sin(ang) * (s * 0.22);
-            const x2 = s / 2 + Math.cos(ang) * (s * 0.38);
-            const y2 = s / 2 + Math.sin(ang) * (s * 0.38);
+            const x1 = s / 2 + Math.cos(ang) * (s * 0.20);
+            const y1 = s / 2 + Math.sin(ang) * (s * 0.20);
+            const x2 = s / 2 + Math.cos(ang) * (s * 0.40);
+            const y2 = s / 2 + Math.sin(ang) * (s * 0.40);
             ctx.beginPath();
             ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
             ctx.stroke();
@@ -1559,15 +1548,19 @@
         name: '温泉',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 温泉 ♨
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.08;
+          ctx.lineWidth = s * 0.12;
+          ctx.lineCap = 'round';
           ctx.beginPath();
-          ctx.ellipse(s / 2, s * 0.7, s * 0.32, s * 0.1, 0, 0, Math.PI * 2);
+          ctx.ellipse(s / 2, s * 0.72, s * 0.34, s * 0.09, 0, 0, Math.PI * 2);
           ctx.stroke();
+          // 3本の湯気
           ctx.beginPath();
-          ctx.moveTo(s * 0.35, s * 0.58); ctx.quadraticCurveTo(s * 0.3, s * 0.45, s * 0.36, s * 0.32);
-          ctx.moveTo(s / 2, s * 0.58); ctx.quadraticCurveTo(s * 0.45, s * 0.4, s * 0.52, s * 0.22);
-          ctx.moveTo(s * 0.65, s * 0.58); ctx.quadraticCurveTo(s * 0.6, s * 0.45, s * 0.66, s * 0.32);
+          ctx.moveTo(s * 0.33, s * 0.58); ctx.quadraticCurveTo(s * 0.26, s * 0.44, s * 0.33, s * 0.30);
+          ctx.moveTo(s / 2, s * 0.58); ctx.quadraticCurveTo(s * 0.42, s * 0.38, s * 0.50, s * 0.18);
+          ctx.moveTo(s * 0.67, s * 0.58); ctx.quadraticCurveTo(s * 0.60, s * 0.44, s * 0.67, s * 0.30);
           ctx.stroke();
         },
         origin: '温泉の湯船から、ふわふわと湯気（ゆげ）が立ち上っている様子を描いた記号です。',
@@ -1578,21 +1571,26 @@
         name: '老人ホーム',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 家の中に杖
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.08;
+          ctx.lineWidth = s * 0.12;
+          ctx.lineJoin = 'round';
           ctx.beginPath();
-          ctx.moveTo(s / 2, s * 0.18);
-          ctx.lineTo(s * 0.18, s * 0.45);
-          ctx.lineTo(s * 0.26, s * 0.45);
-          ctx.lineTo(s * 0.26, s * 0.78);
-          ctx.lineTo(s * 0.74, s * 0.78);
-          ctx.lineTo(s * 0.74, s * 0.45);
-          ctx.lineTo(s * 0.82, s * 0.45);
+          ctx.moveTo(s / 2, s * 0.16);
+          ctx.lineTo(s * 0.16, s * 0.44);
+          ctx.lineTo(s * 0.24, s * 0.44);
+          ctx.lineTo(s * 0.24, s * 0.80);
+          ctx.lineTo(s * 0.76, s * 0.80);
+          ctx.lineTo(s * 0.76, s * 0.44);
+          ctx.lineTo(s * 0.84, s * 0.44);
           ctx.closePath();
           ctx.stroke();
+          // 杖
+          ctx.lineWidth = s * 0.11;
           ctx.beginPath();
-          ctx.arc(s * 0.46, s * 0.52, s * 0.08, Math.PI, 0);
-          ctx.lineTo(s * 0.54, s * 0.7);
+          ctx.arc(s * 0.45, s * 0.52, s * 0.10, Math.PI, 0);
+          ctx.lineTo(s * 0.55, s * 0.72);
           ctx.stroke();
         },
         origin: '住まいの「建物」の中に、お年寄りが使う「杖（つえ）」を組み合わせた平成生まれの新しい記号です。',
@@ -1603,15 +1601,18 @@
         name: '針葉樹林 (スギ・マツ)',
         type: 'map',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
+          // 尖った木 ▲
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = s * 0.09;
+          ctx.lineWidth = s * 0.14;
+          ctx.lineCap = 'round';
           ctx.beginPath();
-          ctx.moveTo(s / 2, s * 0.2);
-          ctx.lineTo(s * 0.24, s * 0.65);
-          ctx.moveTo(s / 2, s * 0.2);
-          ctx.lineTo(s * 0.76, s * 0.65);
-          ctx.moveTo(s / 2, s * 0.2);
-          ctx.lineTo(s / 2, s * 0.8);
+          ctx.moveTo(s / 2, s * 0.18);
+          ctx.lineTo(s * 0.22, s * 0.68);
+          ctx.moveTo(s / 2, s * 0.18);
+          ctx.lineTo(s * 0.78, s * 0.68);
+          ctx.moveTo(s / 2, s * 0.18);
+          ctx.lineTo(s / 2, s * 0.82);
           ctx.stroke();
         },
         origin: 'スギやマツなどの尖った葉っぱの木（針葉樹）の形から作られました。三角形にとがっています。',
@@ -1619,22 +1620,22 @@
       }
     },
 
-    // 算数の単位
+    // 算数の単位 (算数科)
     units: {
       m_to_cm: {
         id: 'm_to_cm',
         name: '1m = 100cm',
         type: 'unit',
-        shortText: '100cm',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.28}px Orbitron, sans-serif`;
+          ctx.font = `900 ${s * 0.32}px Orbitron, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('100cm', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.18}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 1m)', s / 2, s * 0.7);
+          ctx.fillText('100cm', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
+          ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1m)', s / 2, s * 0.74);
         },
         origin: '【長さ】1m（メートル）は100cm（センチメートル）。「c（センチ）」は「100分の1」を表します。',
         caution: '10cmや1000cmと間違えないように！定規の1mは100cmです。'
@@ -1643,16 +1644,16 @@
         id: 'km_to_m',
         name: '1km = 1000m',
         type: 'unit',
-        shortText: '1000m',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.26}px Orbitron, sans-serif`;
+          ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('1000m', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.18}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 1km)', s / 2, s * 0.7);
+          ctx.fillText('1000m', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
+          ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1km)', s / 2, s * 0.74);
         },
         origin: '【長さ】1km（キロメートル）は1000m。「k（キロ）」は「1000倍」という意味があるよ！',
         caution: 'キロがついたら1000倍！1kmは1000mです。'
@@ -1661,16 +1662,16 @@
         id: 'kg_to_g',
         name: '1kg = 1000g',
         type: 'unit',
-        shortText: '1000g',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.28}px Orbitron, sans-serif`;
+          ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('1000g', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.18}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 1kg)', s / 2, s * 0.7);
+          ctx.fillText('1000g', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
+          ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1kg)', s / 2, s * 0.74);
         },
         origin: '【重さ】1kg（キログラム）は1000g（グラム）。これも「k（キロ）」だから1000倍！',
         caution: '100gと勘違いしやすいので注意！1kgは1000gです。'
@@ -1679,16 +1680,16 @@
         id: 'l_to_dl',
         name: '1L = 10dL',
         type: 'unit',
-        shortText: '10dL',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.32}px Orbitron, sans-serif`;
+          ctx.font = `900 ${s * 0.34}px Orbitron, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('10dL', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.18}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 1L)', s / 2, s * 0.7);
+          ctx.fillText('10dL', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
+          ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1L)', s / 2, s * 0.74);
         },
         origin: '【かさ・体積】1L（リットル）は10dL（デシリットル）。「d（デシ）」は「10分の1」を表すよ。',
         caution: '100dLではなく「10dL」です！牛乳パック1Lは10dL！'
@@ -1697,16 +1698,16 @@
         id: 'ha_to_m2',
         name: '1ha = 10000m²',
         type: 'unit',
-        shortText: '10,000m²',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.22}px Orbitron, sans-serif`;
+          ctx.font = `900 ${s * 0.25}px Orbitron, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('10000m²', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.18}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 1ha)', s / 2, s * 0.7);
+          ctx.fillText('10000m²', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
+          ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1ha)', s / 2, s * 0.74);
         },
         origin: '【面積】1辺が100mの正方形の面積が1ha（ヘクタール）= 10000m²。1haは100a（アール）でもあるよ！',
         caution: '100m × 100m = 10,000m² です。0の数（4個）をしっかり数えよう！'
@@ -1715,16 +1716,16 @@
         id: 'm3_to_l',
         name: '1m³ = 1000L',
         type: 'unit',
-        shortText: '1000L',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.28}px Orbitron, sans-serif`;
+          ctx.font = `900 ${s * 0.30}px Orbitron, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('1000L', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.18}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 1m³)', s / 2, s * 0.7);
+          ctx.fillText('1000L', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.22}px "Zen Maru Gothic", sans-serif`;
+          ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 1m³)', s / 2, s * 0.74);
         },
         origin: '【体積】1辺が1mの立方体の体積が1m³。水を入れるとぴったり1000L（100万cm³）入るよ！',
         caution: '100Lではなく「1000L」です。お風呂約5杯分に相当します！'
@@ -1733,22 +1734,46 @@
         id: 'calc_3500ml',
         name: '3500mL = 3L 5dL',
         type: 'unit',
-        shortText: '3L 5dL',
         draw: (ctx, s) => {
+          drawBaseCircle(ctx, s);
           ctx.fillStyle = '#ffffff';
-          ctx.font = `bold ${s * 0.25}px Orbitron, sans-serif`;
+          ctx.font = `900 ${s * 0.26}px Orbitron, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('3L 5dL', s / 2, s * 0.42);
-          ctx.font = `bold ${s * 0.17}px sans-serif`;
-          ctx.fillStyle = '#a0e0ff';
-          ctx.fillText('(= 3500mL)', s / 2, s * 0.7);
+          ctx.fillText('3L 5dL', s / 2, s * 0.44);
+          ctx.font = `900 ${s * 0.20}px "Zen Maru Gothic", sans-serif`;
+          ctx.fillStyle = '#66eeff';
+          ctx.fillText('(= 3500mL)', s / 2, s * 0.74);
         },
         origin: '【単位の計算】1000mL=1L、100mL=1dLなので、3500mLは「3L 5dL」または「3.5L」になるよ！',
         caution: '35Lや3L 50dLと間違えやすいので位取りに注目しよう！'
       }
     }
   };
+
+  // すべてのアイコンに共通の高コントラスト背景サークル（視認性を極限まで高める）
+  function drawBaseCircle(ctx, s) {
+    ctx.clearRect(0, 0, s, s);
+    // 濃紺プレート
+    ctx.fillStyle = '#05182d';
+    ctx.beginPath();
+    ctx.arc(s / 2, s / 2, s * 0.47, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ネオンシアン外枠
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = s * 0.06;
+    ctx.stroke();
+  }
+
+  function drawTextIcon(ctx, s, text) {
+    drawBaseCircle(ctx, s);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `900 ${s * 0.28}px Orbitron, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, s / 2, s / 2);
+  }
 
   /* ==========================================================================
      2. 難易度別 5ステージ ミッションデータ
@@ -1761,7 +1786,8 @@
         title: '浅瀬のサンゴ礁',
         depthTarget: 8,
         question: '「学校 (小・中学校)」の地図記号を探せ！',
-        hint: '漢字の「文」が描かれた光る球体を探そう！',
+        missionPrompt: '小学校や中学校を表す地図記号を見つけ出そう！',
+        missionHint: 'ノートや勉強でおなじみの漢字がモチーフになっているぞ。水中の球体をよく見て探そう！',
         correct: KNOWLEDGE_BASE.mapSymbols.school,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.police,
@@ -1775,7 +1801,8 @@
         title: '巨木のケルプ海藻林',
         depthTarget: 16,
         question: '「1メートル (1m)」と同じ長さを探せ！',
-        hint: '1mは何センチメートル(cm)かな？「100cm」を探そう！',
+        missionPrompt: '「1m」を「cm」に直した正しい単位の球体を探し出そう！',
+        missionHint: '竹ものさしやメジャーを思い出そう。1mは何cmかな？',
         correct: KNOWLEDGE_BASE.units.m_to_cm,
         dummies: [
           { id: 'd_10cm', name: '10cm', type: 'unit', origin: '10cmは1mの10分の1です。', caution: '1mは100cmですよ！', draw: (ctx, s) => drawTextIcon(ctx, s, '10cm') },
@@ -1789,7 +1816,8 @@
         title: 'アトランティス古代遺跡',
         depthTarget: 24,
         question: '「郵便局」の地図記号を探せ！',
-        hint: '「〒」のマークが描かれた球体を探そう！',
+        missionPrompt: '手紙やハガキを届けてくれる郵便局のマークを探そう！',
+        missionHint: '街の赤いポストにもついている、あの有名な記号だ！',
         correct: KNOWLEDGE_BASE.mapSymbols.post,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.jinja,
@@ -1803,7 +1831,8 @@
         title: '発光クリスタルの海溝',
         depthTarget: 32,
         question: '「1キログラム (1kg)」と同じ重さを探せ！',
-        hint: '「キロ」は1000倍！「1000g」の球体を探そう！',
+        missionPrompt: '「1kg」を「g（グラム）」に換算した正しい球体を探そう！',
+        missionHint: '「キロ」がつくと何倍になるかな？位取りを思い出そう！',
         correct: KNOWLEDGE_BASE.units.kg_to_g,
         dummies: [
           { id: 'd_10g', name: '10g', type: 'unit', origin: '10gは小さな消しゴムくらいの軽さです。', caution: '1kgは1000gですよ！', draw: (ctx, s) => drawTextIcon(ctx, s, '10g') },
@@ -1817,7 +1846,8 @@
         title: 'アビスコア・水族館最深部',
         depthTarget: 42,
         question: '「温泉」の地図記号を探せ！',
-        hint: '湯船から湯気が3本立ち上る球体を探そう！',
+        missionPrompt: '温泉街や旅館でおなじみの記号を探し出そう！',
+        missionHint: 'あたたかいお湯から湯気が出ている様子を思い浮かべよう！',
         correct: KNOWLEDGE_BASE.mapSymbols.onsen,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.koban,
@@ -1834,7 +1864,8 @@
         title: '陽光のサンゴ礁パトロール',
         depthTarget: 10,
         question: '「消防署」の地図記号を探せ！',
-        hint: '火消しの道具「さすまた (Y字型)」の球体を探そう！',
+        missionPrompt: '火事や救急の時に駆けつけてくれる消防署の記号を探そう！',
+        missionHint: '昔の火消しが屋根を壊すのに使った道具の形がモチーフだ！警察署(✕)と間違えないように！',
         correct: KNOWLEDGE_BASE.mapSymbols.fire,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.police,
@@ -1848,7 +1879,8 @@
         title: 'ケルプの迷宮とシュモクザメ',
         depthTarget: 18,
         question: '「1リットル (1L)」と同じかさを探せ！',
-        hint: '牛乳パック1Lは「10dL」！「10dL」の球体を探そう！',
+        missionPrompt: '「1L」を「dL（デシリットル）」に直した正しい球体を探そう！',
+        missionHint: '牛乳パック1本分のかさは、何デシリットルかな？',
         correct: KNOWLEDGE_BASE.units.l_to_dl,
         dummies: [
           { id: 'd_100dl', name: '100dL', type: 'unit', origin: '100dLは10Lになってしまいます。', caution: '1Lは10dLです！', draw: (ctx, s) => drawTextIcon(ctx, s, '100dL') },
@@ -1862,7 +1894,8 @@
         title: 'アトランティス神殿と守護エイ',
         depthTarget: 26,
         question: '「市役所・区役所」の地図記号を探せ！',
-        hint: '中心を表す「二重丸◎」の球体を探そう！',
+        missionPrompt: '市の政治の中心である「市役所」の記号を探し出そう！',
+        missionHint: '中心をあらわす丸いマークだ！町村役場としっかり区別しよう！',
         correct: KNOWLEDGE_BASE.mapSymbols.cityhall,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.townhall,
@@ -1876,7 +1909,8 @@
         title: '暗黒海溝と発光アンコウ',
         depthTarget: 34,
         question: '「1ヘクタール (1ha)」と同じ面積を探せ！',
-        hint: '100m × 100m = 「10000m²」の球体を探そう！',
+        missionPrompt: '広大な面積を表す「1ha」と同じ広さの球体を探そう！',
+        missionHint: '1辺が100mの正方形の面積を計算してみよう！(100m × 100m)',
         correct: KNOWLEDGE_BASE.units.ha_to_m2,
         dummies: [
           { id: 'd_100m2', name: '100m²', type: 'unit', origin: '100m²は1a（アール）です。', caution: '1haは10,000m²（100a）です！', draw: (ctx, s) => drawTextIcon(ctx, s, '100m²') },
@@ -1890,7 +1924,8 @@
         title: 'メガロドンの聖域',
         depthTarget: 45,
         question: '「寺院 (お寺)」の地図記号を探せ！',
-        hint: '神聖な「卍（まんじ）」の球体を探そう！',
+        missionPrompt: 'お寺（寺院）を表す神聖な地図記号を探し出そう！',
+        missionHint: '神社の鳥居ではなく、仏教に由来する神聖な記号だ！',
         correct: KNOWLEDGE_BASE.mapSymbols.temple,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.jinja,
@@ -1907,7 +1942,8 @@
         title: '機雷ドローン警戒海域',
         depthTarget: 12,
         question: '「老人ホーム」の地図記号を探せ！',
-        hint: '建物の中に「杖（つえ）」がある球体を探そう！',
+        missionPrompt: 'お年寄りが暮らす老人ホームの地図記号を探し出そう！',
+        missionHint: '建物の中に、お年寄りが使う「ある道具」が描かれているぞ！',
         correct: KNOWLEDGE_BASE.mapSymbols.nursing,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.hospital,
@@ -1921,7 +1957,8 @@
         title: 'ハンターシャーク回廊',
         depthTarget: 20,
         question: '「1立方メートル (1m³)」と同じ体積を探せ！',
-        hint: '1辺1mの立方体に入る水の量は「1000L」！',
+        missionPrompt: '「1m³」の立方体に入る水の体積(L)を探そう！',
+        missionHint: '1辺1mの立方体には、何リットルの水が入るかな？',
         correct: KNOWLEDGE_BASE.units.m3_to_l,
         dummies: [
           { id: 'd_100l', name: '100L', type: 'unit', origin: '100Lは家庭のお風呂の半分ほどです。', caution: '1m³は1000L入ります！', draw: (ctx, s) => drawTextIcon(ctx, s, '100L') },
@@ -1935,7 +1972,8 @@
         title: '沈没神殿のメカ・マンタレイ',
         depthTarget: 28,
         question: '「工場」の地図記号を探せ！',
-        hint: '機械を動かす「歯車（はぐるま）」の球体を探そう！',
+        missionPrompt: 'ものづくりを行う工場の地図記号を探し出そう！',
+        missionHint: '機械を動かす大切な部品の形をしているぞ！',
         correct: KNOWLEDGE_BASE.mapSymbols.factory,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.fire,
@@ -1949,7 +1987,8 @@
         title: '深海巨大アンコウの巣窟',
         depthTarget: 36,
         question: '「3500mL」を換算した正しい表記を探せ！',
-        hint: '1000mL=1L、100mL=1dLより「3L 5dL」を探そう！',
+        missionPrompt: '「3500mL」をLとdLで表した正しい球体を探そう！',
+        missionHint: '1000mL=1L、100mL=1dLを思い出して位取りを計算しよう！',
         correct: KNOWLEDGE_BASE.units.calc_3500ml,
         dummies: [
           { id: 'd_35l', name: '35L', type: 'unit', origin: '35Lは35,000mLです。', caution: '3500mLは3.5L（3L 5dL）です！', draw: (ctx, s) => drawTextIcon(ctx, s, '35L') },
@@ -1963,7 +2002,8 @@
         title: '太古のメガロドン＆クラーケンコア',
         depthTarget: 48,
         question: '「針葉樹林 (スギ・マツ)」の地図記号を探せ！',
-        hint: '三角にとがった木の形の球体を探そう！',
+        missionPrompt: 'スギやマツが茂る針葉樹林の記号を探し出そう！',
+        missionHint: '尖った葉っぱを持つ木の特徴が、そのまま形になっているぞ！',
         correct: KNOWLEDGE_BASE.mapSymbols.conifer,
         dummies: [
           KNOWLEDGE_BASE.mapSymbols.factory,
@@ -1974,16 +2014,8 @@
     ]
   };
 
-  function drawTextIcon(ctx, s, text) {
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `bold ${s * 0.28}px Orbitron, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, s / 2, s / 2);
-  }
-
   /* ==========================================================================
-     3. 音声読み上げシステム (Web Speech API) & 効果音システム
+     3. 音声読み上げシステム (Web Speech API) & サウンド
      ========================================================================== */
   class SpeechManager {
     constructor() {
@@ -1997,7 +2029,6 @@
       if (!this.synth) return;
       const setVoice = () => {
         const voices = this.synth.getVoices();
-        // 日本語音声を優先探索 (Google 日本語 / Kyoko / 女性声)
         this.voice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP')) || null;
       };
       setVoice();
@@ -2016,9 +2047,8 @@
 
     speak(text) {
       if (!this.enabled || !this.synth) return;
-      this.synth.cancel(); // 前の読み上げを停止
+      this.synth.cancel();
 
-      // 記号や単位のフリガナ補正
       let spokenText = text
         .replace(/1m³/g, 'いちりっぽうめーとる')
         .replace(/1ha/g, 'いちはくたーる')
@@ -2124,7 +2154,6 @@
     playDiveSplash() {
       if (!this.enabled || !this.ctx) return;
       const t = this.ctx.currentTime;
-      // スプラッシュ・水しぶきノイズ
       const bufferSize = this.ctx.sampleRate * 0.8;
       const b = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const d = b.getChannelData(0);
@@ -2170,7 +2199,7 @@
     playCorrect() {
       if (!this.enabled || !this.ctx) return;
       const t = this.ctx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const notes = [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2318,7 +2347,7 @@
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      this.renderer.toneMappingExposure = 1.1;
+      this.renderer.toneMappingExposure = 1.15;
       container.appendChild(this.renderer.domElement);
 
       window.addEventListener('resize', () => {
@@ -2327,8 +2356,7 @@
         this.renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
-      // ライティング
-      const hemiLight = new THREE.HemisphereLight(0x40a0ff, 0x051025, 0.85);
+      const hemiLight = new THREE.HemisphereLight(0x40a0ff, 0x051025, 0.9);
       this.scene.add(hemiLight);
 
       const dirLight = new THREE.DirectionalLight(0x70c0ff, 1.2);
@@ -2339,7 +2367,6 @@
       this.createSubmarine();
       this.createBubbleParticles();
 
-      // アニメーションループ開始
       this.animate = this.animate.bind(this);
       requestAnimationFrame(this.animate);
     }
@@ -2378,7 +2405,7 @@
       glassFrame.position.y = -27.5;
       this.scene.add(glassFrame);
 
-      // サンゴ礁の岩山
+      // 岩山
       for (let i = 0; i < 20; i++) {
         const rockGeo = new THREE.DodecahedronGeometry(2 + Math.random() * 4, 1);
         const rockMat = new THREE.MeshStandardMaterial({
@@ -2397,7 +2424,7 @@
     createSubmarine() {
       this.submarine = new THREE.Group();
 
-      // メインハル (しんかい6500風・黄色と白の流線型)
+      // メインハル (黄色と白の流線型)
       const hullGeo = new THREE.CylinderGeometry(1.1, 0.9, 4.5, 20);
       hullGeo.rotateX(Math.PI / 2);
       const hullMat = new THREE.MeshStandardMaterial({
@@ -2436,7 +2463,7 @@
       fin.position.set(0, 0, -1.2);
       this.submarine.add(fin);
 
-      // 後部スクリュー
+      // スクリュー
       const propGroup = new THREE.Group();
       for (let i = 0; i < 3; i++) {
         const bladeGeo = new THREE.BoxGeometry(0.12, 0.8, 0.2);
@@ -2462,7 +2489,7 @@
       this.submarine.add(lightRight);
       this.submarine.add(lightRight.target);
 
-      // ビームコーン（可視光線）
+      // ビームコーン
       const beamGeo = new THREE.ConeGeometry(4, 25, 16, 1, true);
       beamGeo.rotateX(-Math.PI / 2);
       beamGeo.translate(0, 0, 12.5);
@@ -2477,7 +2504,7 @@
       this.submarine.add(beam);
       this.subMeshParts.beam = beam;
 
-      this.submarine.position.set(0, 0, 0); // 水面待機
+      this.submarine.position.set(0, 0, 0);
       this.scene.add(this.submarine);
     }
 
@@ -2502,23 +2529,20 @@
     }
 
     /* --------------------------------------------------------------------------
-       ステージ準備 & 指令書 (MISSION BRIEFING) 提示ステップ
+       ステージ準備 & 指令書提示 (答えの解説は出さない！)
        -------------------------------------------------------------------------- */
     setupStage(stageIdx) {
       this.currentStageIdx = stageIdx;
       const stageData = this.stages[stageIdx];
 
-      // HUDテキスト更新
       document.getElementById('hud-stage-badge').innerText = `STAGE ${stageData.stage}/5`;
       document.getElementById('hud-mode-badge').innerText = 
         this.selectedMode === 'easy' ? 'イージー' : (this.selectedMode === 'normal' ? 'ノーマル' : 'ハード');
       document.getElementById('mission-target-text').innerText = stageData.question;
-      document.getElementById('mission-target-hint').innerText = stageData.hint;
+      document.getElementById('mission-target-hint').innerText = '球体に近づいて記号を確認し[F]キーで回収しよう';
 
-      // オブジェクトクリア
       this.clearStageObjects();
 
-      // 水槽フォグ色
       if (stageData.biome === 'coral') {
         this.scene.fog.color.setHex(0x0a324a);
       } else if (stageData.biome === 'kelp') {
@@ -2532,58 +2556,45 @@
       }
       this.renderer.setClearColor(this.scene.fog.color);
 
-      // 環境構築
       this.buildKelpForest(stageData.biome);
       this.buildAtlantisRuins(stageData.biome);
       this.spawnEnemies(stageData);
       this.spawnQuizTargets(stageData);
 
-      // 潜水艦を水面位置（深度0m）にセット
       this.submarine.position.set(0, 0, 0);
       this.submarine.rotation.set(0, 0, 0);
       this.depth = 0;
       this.speed = 0;
-      this.gameActive = false; // ブリーフィング中待機
+      this.gameActive = false;
 
-      // 【教育的予習】潜航指令書モーダルを開く
+      // 潜航指令書を表示 (答えの詳しい由来はまだ流さない！)
       this.showMissionBriefing(stageData);
     }
 
     showMissionBriefing(stageData) {
       document.getElementById('briefing-stage-name').innerText = `STAGE ${stageData.stage}/5 (${stageData.title})`;
       document.getElementById('briefing-mission-title').innerText = stageData.question;
-      document.getElementById('briefing-origin-text').innerText = stageData.correct.origin;
-      document.getElementById('briefing-caution-text').innerHTML = `⚠️ <strong>間違えやすいポイント:</strong> ${stageData.correct.caution || 'ダミーの球体としっかり見比べよう！'}`;
-
-      // 3D球体プレビューCanvasに記号を描画
-      const canvas = document.getElementById('briefing-canvas');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, 140, 140);
-      if (stageData.correct.draw) {
-        stageData.correct.draw(ctx, 140);
-      }
+      document.getElementById('briefing-mission-prompt').innerText = stageData.missionPrompt;
+      document.getElementById('briefing-mission-hint').innerText = stageData.missionHint;
 
       document.getElementById('modal-briefing').classList.add('open');
 
-      // 音声読み上げ
-      const ttsText = `第${stageData.stage}問。${stageData.question}。${stageData.correct.origin}`;
+      // 音声読み上げ（ミッション内容とお題のみをアナウンス）
+      const ttsText = `第${stageData.stage}問。${stageData.question}。${stageData.missionHint}`;
       this.speech.speak(ttsText);
     }
 
     startDiveFromSurface() {
-      // 指令書を閉じて水面から潜航開始
       document.getElementById('modal-briefing').classList.remove('open');
       this.gameActive = true;
       this.isDivingTransition = true;
 
-      // 水しぶき効果音＆画面エフェクト
       this.sound.playDiveSplash();
       const splashOverlay = document.getElementById('dive-splash-overlay');
       splashOverlay.classList.remove('splash');
-      void splashOverlay.offsetWidth; // リフロー
+      void splashOverlay.offsetWidth;
       splashOverlay.classList.add('splash');
 
-      // 潜水艦を水面から下方向へスムーズに潜らせる
       const stageData = this.stages[this.currentStageIdx];
       const targetY = -Math.max(4, stageData.depthTarget * 0.4);
 
@@ -2615,7 +2626,6 @@
       this.ruinsObjects.forEach(r => this.scene.remove(r.mesh));
       this.ruinsObjects = [];
 
-      // HUDマーカー要素を削除
       this.markersContainer.innerHTML = '';
       this.hudMarkers = [];
     }
@@ -2774,7 +2784,6 @@
           eGroup.add(mesh);
         }
 
-        // 索敵光コーン
         const sensorGeo = new THREE.ConeGeometry(3.5, aggroRange * 0.7, 12, 1, true);
         sensorGeo.rotateX(-Math.PI / 2);
         sensorGeo.translate(0, 0, (aggroRange * 0.7) / 2);
@@ -2811,7 +2820,7 @@
     }
 
     /* --------------------------------------------------------------------------
-       3D球体（オーブ）＆高解像度ホログラム記号のスポーン
+       球体スポーン：【完全同色】で記号を極めて見やすく表示！
        -------------------------------------------------------------------------- */
     spawnQuizTargets(stageData) {
       const items = [
@@ -2819,6 +2828,7 @@
         ...stageData.dummies.map(d => ({ data: d, isCorrect: false }))
       ];
 
+      // シャッフル
       for (let i = items.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [items[i], items[j]] = [items[j], items[i]];
@@ -2830,67 +2840,71 @@
       items.forEach((item, idx) => {
         const orbGroup = new THREE.Group();
 
-        // 1. メイン発光球体 (テクスチャ直貼り)
-        const orbCanvas = document.createElement('canvas');
-        orbCanvas.width = 512;
-        orbCanvas.height = 512;
-        const orbCtx = orbCanvas.getContext('2d');
+        // 1. 高解像度Canvas (512x512) で記号を極太・高コントラスト描画
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
 
-        // 背景グラデーション (球体表面用)
-        const bgGrad = orbCtx.createRadialGradient(256, 256, 30, 256, 256, 250);
-        bgGrad.addColorStop(0, item.isCorrect ? 'rgba(0, 240, 255, 0.95)' : 'rgba(80, 160, 220, 0.9)');
-        bgGrad.addColorStop(0.7, item.isCorrect ? 'rgba(0, 100, 200, 0.7)' : 'rgba(30, 80, 140, 0.6)');
-        bgGrad.addColorStop(1, 'rgba(4, 15, 30, 0.95)');
-        orbCtx.fillStyle = bgGrad;
-        orbCtx.fillRect(0, 0, 512, 512);
-
-        // 枠線
-        orbCtx.strokeStyle = item.isCorrect ? '#00f0ff' : '#66aacc';
-        orbCtx.lineWidth = 14;
-        orbCtx.strokeRect(16, 16, 480, 480);
-
-        // 記号または単位を大きく描画
         if (item.data.draw) {
-          item.data.draw(orbCtx, 512);
+          item.data.draw(ctx, 512);
         }
 
-        const orbTexture = new THREE.CanvasTexture(orbCanvas);
-        orbTexture.wrapS = THREE.RepeatWrapping;
-        orbTexture.wrapT = THREE.RepeatWrapping;
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
 
+        // 2. 外側球体 (正解・ダミー問わず【完全同色・同形状】の透明クリスタル球)
         const orbGeo = new THREE.SphereGeometry(2.3, 24, 24);
-        const orbMat = new THREE.MeshStandardMaterial({
-          map: orbTexture,
-          emissive: item.isCorrect ? 0x004466 : 0x002244,
-          emissiveIntensity: 0.5,
-          roughness: 0.2,
-          metalness: 0.1
+        const orbMat = new THREE.MeshPhysicalMaterial({
+          color: 0x00f0ff,
+          transparent: true,
+          opacity: 0.35,
+          roughness: 0.1,
+          transmission: 0.65,
+          side: THREE.DoubleSide
         });
         const orbSphere = new THREE.Mesh(orbGeo, orbMat);
         orbGroup.add(orbSphere);
 
-        // 2. 外周の回転エネルギーリング
-        const ringGeo = new THREE.TorusGeometry(3.0, 0.09, 8, 30);
+        // 3. 回転エネルギーリング (すべて同色)
+        const ringGeo = new THREE.TorusGeometry(3.0, 0.08, 8, 32);
         const ringMat = new THREE.MeshBasicMaterial({
-          color: item.isCorrect ? 0x00ffff : 0x4488aa,
+          color: 0x00f0ff,
           transparent: true,
           opacity: 0.8
         });
         const ring = new THREE.Mesh(ringGeo, ringMat);
         orbGroup.add(ring);
 
-        // 3. 球体内部のビルボードホログラム板 (全角度から正面に見える)
-        const planeGeo = new THREE.PlaneGeometry(3.2, 3.2);
-        const planeMat = new THREE.MeshBasicMaterial({
-          map: orbTexture,
+        // 4. 【超視認性】球体中央のビルボードプレート（常にカメラ正面を向く）
+        const billboardGeo = new THREE.PlaneGeometry(3.6, 3.6);
+        const billboardMat = new THREE.MeshBasicMaterial({
+          map: texture,
           transparent: true,
-          opacity: 0.95,
-          side: THREE.DoubleSide
+          opacity: 0.98,
+          side: THREE.DoubleSide,
+          depthWrite: false
         });
-        const billboard = new THREE.Mesh(planeGeo, planeMat);
+        const billboard = new THREE.Mesh(billboardGeo, billboardMat);
+        billboard.renderOrder = 2;
         orbGroup.add(billboard);
 
-        // 4. 配置座標 (水槽内に散布)
+        // 5. 【頭上ホログラム】遠くからでも見える立体頭上サイン
+        const signGeo = new THREE.PlaneGeometry(2.5, 2.5);
+        const signMat = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          opacity: 0.9,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+        const sign = new THREE.Mesh(signGeo, signMat);
+        sign.position.set(0, 3.2, 0);
+        sign.renderOrder = 3;
+        orbGroup.add(sign);
+
+        // 6. 配置座標
         const ang = (idx * Math.PI * 2) / items.length + (Math.random() - 0.5) * 0.4;
         const dist = 24 + Math.random() * 22;
         const tX = Math.cos(ang) * dist;
@@ -2900,12 +2914,12 @@
         orbGroup.position.set(tX, tY, tZ);
         this.scene.add(orbGroup);
 
-        // 5. スクリーンHUD追従マーカー要素作成
+        // 7. スクリーンHUDマーカー（正解・ダミー同一デザイン）
         const markerEl = document.createElement('div');
-        markerEl.className = `orb-hud-marker ${item.isCorrect ? 'correct' : ''}`;
+        markerEl.className = 'orb-hud-marker';
         markerEl.innerHTML = `
           <div class="bracket-box">
-            <i class="fa-solid fa-crosshairs" style="color:${item.isCorrect ? '#ffd700' : '#00f0ff'}; font-size:16px;"></i>
+            <i class="fa-solid fa-crosshairs" style="color:#00f0ff; font-size:16px;"></i>
           </div>
           <div class="marker-dist">--m</div>
         `;
@@ -2915,6 +2929,7 @@
           mesh: orbGroup,
           ring: ring,
           billboard: billboard,
+          sign: sign,
           data: item.data,
           isCorrect: item.isCorrect,
           baseY: tY,
@@ -3096,33 +3111,29 @@
       const subPos = this.submarine.position;
       let nearestTarget = null;
       let minDist = 999;
-      let correctTarget = null;
 
       this.targetOrbs.forEach(t => {
-        // 球体とリングの回転アニメーション
         t.mesh.position.y = t.baseY + Math.sin(time * 2 + t.phase) * 0.8;
         t.ring.rotation.x += 0.02;
         t.ring.rotation.y += 0.03;
+
+        // 記号プレートと頭上看板は常にカメラ正面を向く
         t.billboard.lookAt(this.camera.position);
+        t.sign.lookAt(this.camera.position);
 
         const d = t.mesh.position.distanceTo(subPos);
         if (d < minDist) {
           minDist = d;
           nearestTarget = t;
         }
-        if (t.isCorrect) {
-          correctTarget = t;
-        }
       });
 
-      // ナビコンパス更新 (正解オーブの方向と距離)
-      if (correctTarget) {
-        const d = correctTarget.mesh.position.distanceTo(subPos);
-        document.getElementById('nav-arrow-dist').innerText = Math.round(d);
+      // ナビコンパス（最寄りの球体エリアをナビゲート）
+      if (nearestTarget) {
+        document.getElementById('nav-arrow-dist').innerText = Math.round(minDist);
 
-        // 自機の前方ベクトルとの角度比較
         const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.submarine.quaternion);
-        const toTarget = new THREE.Vector3().subVectors(correctTarget.mesh.position, subPos).normalize();
+        const toTarget = new THREE.Vector3().subVectors(nearestTarget.mesh.position, subPos).normalize();
         const dot = forward.dot(toTarget);
         const cross = new THREE.Vector3().crossVectors(forward, toTarget);
 
@@ -3135,7 +3146,7 @@
         document.getElementById('nav-arrow-dir').innerText = dirText;
       }
 
-      // 回収可能判定 (5.5m以内)
+      // 回収判定 (5.8m以内)
       const collectBtn = document.getElementById('btn-collect-target');
       if (minDist < 5.8) {
         this.canCollectTarget = nearestTarget;
@@ -3149,7 +3160,6 @@
     }
 
     updateScreenMarkers() {
-      // 3D座標から2Dスクリーン座標へ投影しHUDマーカーを描画
       if (!this.camera || !this.submarine) return;
       const subPos = this.submarine.position;
       const widthHalf = window.innerWidth / 2;
@@ -3159,7 +3169,6 @@
         const targetPos = t.mesh.position.clone();
         const dist = targetPos.distanceTo(subPos);
 
-        // カメラ前方の判定
         targetPos.project(this.camera);
 
         const isBehind = targetPos.z > 1.0;
@@ -3270,13 +3279,13 @@
       const subX = this.submarine.position.x;
       const subZ = this.submarine.position.z;
 
-      // ターゲット（オーブ）表示
+      // ターゲット（オーブ）表示：【すべて同じシアン色】
       this.targetOrbs.forEach(t => {
         const rx = center + (t.mesh.position.x - subX) * scale;
         const rz = center + (t.mesh.position.z - subZ) * scale;
-        ctx.fillStyle = t.isCorrect ? '#ffd700' : '#00f0ff';
+        ctx.fillStyle = '#00f0ff';
         ctx.beginPath();
-        ctx.arc(rx, rz, t.isCorrect ? 4.5 : 3, 0, Math.PI * 2);
+        ctx.arc(rx, rz, 3.5, 0, Math.PI * 2);
         ctx.fill();
       });
 
@@ -3305,7 +3314,7 @@
     }
 
     /* --------------------------------------------------------------------------
-       ターゲット回収判定 & 教育的フィードバック（正解 / 比較モーダル）
+       ターゲット回収判定 & 教育的フィードバック（正解した後に詳しい解説を流す！）
        -------------------------------------------------------------------------- */
     collectCurrentTarget() {
       if (!this.canCollectTarget) return;
@@ -3314,7 +3323,7 @@
       const stageData = this.stages[this.currentStageIdx];
 
       if (target.isCorrect) {
-        // 正解！
+        // 正解！ここで初めて詳しい解説と由来を流す！
         this.gameActive = false;
         this.sound.playCorrect();
         this.clearedStagesHistory.push(target.data);
@@ -3331,36 +3340,34 @@
     showExplanationModal(data) {
       document.getElementById('modal-exp-title').innerText = `「${data.name}」`;
       document.getElementById('modal-exp-body').innerHTML = `
-        <strong>【小学校の学び・由来】</strong><br>${data.origin}<br><br>
+        <strong>【由来・意味の解説】</strong><br>${data.origin}<br><br>
         <strong>【覚えるコツ】</strong><br>${data.caution || 'よく目にする形と意味をセットで覚えよう！'}
       `;
 
       const canvas = document.getElementById('exp-icon-canvas');
       const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, 110, 110);
-      if (data.draw) data.draw(ctx, 110);
+      ctx.clearRect(0, 0, 140, 140);
+      if (data.draw) data.draw(ctx, 140);
 
       document.getElementById('modal-explanation').classList.add('open');
 
-      // 音声読み上げ
-      this.speech.speak(`正解！${data.name}。${data.origin}`);
+      // 正解後に音声読み上げ
+      this.speech.speak(`大正解！正解は、${data.name}です！${data.origin}`);
     }
 
     showWrongComparisonModal(wrongData, correctData) {
       document.getElementById('wrong-symbol-name').innerText = wrongData.name;
       document.getElementById('correct-symbol-name').innerText = correctData.name;
 
-      // 間違えたもの
       const wCanvas = document.getElementById('wrong-compare-canvas');
       const wCtx = wCanvas.getContext('2d');
-      wCtx.clearRect(0, 0, 80, 80);
-      if (wrongData.draw) wrongData.draw(wCtx, 80);
+      wCtx.clearRect(0, 0, 90, 90);
+      if (wrongData.draw) wrongData.draw(wCtx, 90);
 
-      // 正解のもの
       const cCanvas = document.getElementById('correct-compare-canvas');
       const cCtx = cCanvas.getContext('2d');
-      cCtx.clearRect(0, 0, 80, 80);
-      if (correctData.draw) correctData.draw(cCtx, 80);
+      cCtx.clearRect(0, 0, 90, 90);
+      if (correctData.draw) correctData.draw(cCtx, 90);
 
       document.getElementById('modal-wrong-body').innerHTML = `
         あなたが選んだのは<strong>「${wrongData.name}」</strong>だよ！<br>
@@ -3370,8 +3377,6 @@
       `;
 
       document.getElementById('modal-wrong').classList.add('open');
-
-      // 音声読み上げ
       this.speech.speak(`惜しい！それは${wrongData.name}です。探している本物は${correctData.name}だよ。形の違いを比べてみよう！`);
     }
 
@@ -3410,7 +3415,6 @@
       document.getElementById('res-rank-text').innerText = `RANK ${rank}`;
       document.getElementById('res-title-text').innerText = title;
 
-      // 今回の学習ノート（5問分）を一覧生成
       const notesList = document.getElementById('study-notes-list');
       notesList.innerHTML = '';
       this.clearedStagesHistory.forEach((item, idx) => {
@@ -3418,10 +3422,10 @@
         row.className = 'study-note-item';
 
         const canvas = document.createElement('canvas');
-        canvas.width = 96;
-        canvas.height = 96;
+        canvas.width = 108;
+        canvas.height = 108;
         const ctx = canvas.getContext('2d');
-        if (item.draw) item.draw(ctx, 96);
+        if (item.draw) item.draw(ctx, 108);
 
         row.appendChild(canvas);
         row.innerHTML += `
@@ -3525,7 +3529,6 @@
       stick.addEventListener('touchend', resetJoy);
       stick.addEventListener('touchcancel', resetJoy);
 
-      // モバイル昇降ボタン
       const btnUp = document.getElementById('btn-touch-up');
       const btnDown = document.getElementById('btn-touch-down');
       btnUp.addEventListener('touchstart', () => { this.touchUp = true; });
@@ -3535,7 +3538,6 @@
     }
 
     initUI() {
-      // 難易度カード選択
       const modeCards = document.querySelectorAll('.mode-card');
       modeCards.forEach(card => {
         card.addEventListener('click', () => {
@@ -3545,91 +3547,75 @@
         });
       });
 
-      // 開始ボタン
       document.getElementById('btn-start-game').addEventListener('click', () => {
         this.startNewGame(this.selectedMode);
       });
 
-      // 指令書から潜航開始ボタン (DIVE!)
       document.getElementById('btn-start-dive').addEventListener('click', () => {
         this.startDiveFromSurface();
       });
 
-      // 指令書 音声読み上げボタン
       document.getElementById('btn-briefing-tts').addEventListener('click', () => {
         const stageData = this.stages[this.currentStageIdx];
-        this.speech.speak(`第${stageData.stage}問。${stageData.question}。${stageData.correct.origin}`);
+        this.speech.speak(`第${stageData.stage}問。${stageData.question}。${stageData.missionHint}`);
       });
 
-      // HUD音声読み上げボタン
       document.getElementById('btn-hud-tts').addEventListener('click', () => {
         const stageData = this.stages[this.currentStageIdx];
         this.speech.speak(stageData.question);
       });
 
-      // 解説モーダル 音声読み上げボタン
       document.getElementById('btn-exp-tts').addEventListener('click', () => {
         const stageData = this.stages[this.currentStageIdx];
-        this.speech.speak(`正解！${stageData.correct.name}。${stageData.correct.origin}`);
+        this.speech.speak(`大正解！${stageData.correct.name}。${stageData.correct.origin}`);
       });
 
-      // 次ステージボタン
       document.getElementById('btn-next-stage').addEventListener('click', () => {
         this.nextStage();
       });
 
-      // 不正解再開ボタン
       document.getElementById('btn-resume-search').addEventListener('click', () => {
         document.getElementById('modal-wrong').classList.remove('open');
       });
 
-      // リトライ
       document.getElementById('btn-retry-stage').addEventListener('click', () => {
         this.restartCurrentStage();
       });
 
-      // タイトルへ戻る
       document.getElementById('btn-back-to-title').addEventListener('click', () => {
         document.getElementById('modal-gameover').classList.remove('open');
         document.getElementById('modal-start').classList.add('open');
       });
 
-      // クリア後再挑戦
       document.getElementById('btn-replay').addEventListener('click', () => {
         document.getElementById('modal-clear').classList.remove('open');
         document.getElementById('modal-start').classList.add('open');
       });
 
-      // カメラ視点切り替え
       document.getElementById('btn-cam-view').addEventListener('click', () => {
         this.toggleCamera();
       });
 
-      // 音声読み上げ切り替え (TTS)
       const ttsBtn = document.getElementById('btn-tts-toggle');
       ttsBtn.addEventListener('click', () => {
         const on = this.speech.toggle();
         ttsBtn.innerHTML = on ? '<i class="fa-solid fa-comment-dots"></i>' : '<i class="fa-solid fa-comment-slash"></i>';
       });
 
-      // サウンドON/OFF
       const soundBtn = document.getElementById('btn-sound-toggle');
       soundBtn.addEventListener('click', () => {
         const on = this.sound.toggle();
         soundBtn.innerHTML = on ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
       });
 
-      // ソナーボタン
       document.getElementById('btn-sonar-ping').addEventListener('click', () => {
         this.triggerSonarPulse();
       });
 
-      // 回収ボタン
       document.getElementById('btn-collect-target').addEventListener('click', () => {
         this.collectCurrentTarget();
       });
 
-      // 図鑑ボタン
       document.getElementById('btn-open-encyclopedia').addEventListener('click', () => {
         document.getElementById('modal-encyclopedia').classList.add('open');
       });
@@ -3643,7 +3629,6 @@
         document.getElementById('modal-encyclopedia').classList.remove('open');
       });
 
-      // 図鑑タブ
       document.getElementById('tab-btn-map').addEventListener('click', () => {
         document.getElementById('tab-btn-map').classList.add('active');
         document.getElementById('tab-btn-units').classList.remove('active');
@@ -3700,7 +3685,6 @@
     }
   }
 
-  // アプリケーション起動
   window.addEventListener('DOMContentLoaded', () => {
     new SubmarineGame();
   });
